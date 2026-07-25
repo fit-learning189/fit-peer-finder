@@ -68,7 +68,7 @@ const VolunteerMarketplace = () => {
   return (
     <div style={styles.container}>
       <nav style={styles.navbar}>
-        <div style={styles.navLeft} onClick={() => navigate('/')} style={{cursor: 'pointer'}}>
+        <div style={{...styles.navLeft, cursor: 'pointer'}} onClick={() => navigate('/')}>
           <span style={styles.logoText}>&larr; Back to Home</span>
         </div>
       </nav>
