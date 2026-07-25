@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { colors, fonts } from '../theme';
 import { API_URL } from '../config';
-import HeroSlideshow from './HeroSlideshow';
 
 // --- FIT PROGRAM CONFIGURATION ---
 // Flat list (no "vertical" grouping layer) since FIT currently runs one program.
@@ -25,6 +24,38 @@ const PROGRAMS = [
     ]
   }
 ];
+
+// --- SLIDESHOW DATA ---
+const slides = [
+  { id: 1, image: "/slide1.jpg", text: "It's a Match!", subtext: "Register and get paired instantly." },
+  { id: 2, image: "/slide2.jpg", text: "Let's meet!", subtext: "Connect via WhatsApp immediately." },
+  { id: 3, image: "/slide3.jpg", text: "Collaborate & Grow", subtext: "Work on Milestones and projects together." },
+  { id: 4, image: "/fit_logo.png", text: "FIT PeerFinder", subtext: "Global Skills Academy — Study together", isLogo: true }
+];
+
+const HeroSlideshow = () => {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setIndex((prev) => (prev + 1) % slides.length), 5000);
+    return () => clearInterval(timer);
+  }, []);
+  return (
+    <div style={styles.slideshowContainer}>
+      <AnimatePresence mode='wait'>
+        <motion.div key={index} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 1.5 }} style={styles.slide}>
+          <div style={{...styles.image, backgroundImage: `url(${slides[index].image})`, backgroundSize: slides[index].isLogo ? 'contain' : 'cover'}} />
+          <div style={styles.overlay} />
+        </motion.div>
+      </AnimatePresence>
+      <div style={styles.slideContentWrapper}>
+        <motion.div key={index} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+          <h2 style={styles.slideTitle}>{slides[index].text}</h2>
+          <p style={styles.slideSubtext}>{slides[index].subtext}</p>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
 
 // --- ANIMATED LEADERBOARD COMPONENT ---
 const Leaderboard = () => {
@@ -279,6 +310,10 @@ const styles = {
   dropdownMenu: { position: 'absolute', top: '50px', right: '0', background: 'white', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', width: '200px', zIndex: 100 },
   dropdownItem: { padding: '15px', cursor: 'pointer', textAlign: 'center', color: colors.primary.iris, fontWeight: 'bold' },
   heroSection: { minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position:'relative', overflow:'hidden' },
+  slideshowContainer: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
+  slide: { position: 'absolute', width: '100%', height: '100%' }, image: { width: '100%', height: '100%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }, overlay: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,43,86,0.6)' },
+  slideContentWrapper: { position: 'absolute', bottom: '15%', width: '100%', textAlign: 'center', color: 'white', zIndex: 2 },
+  slideTitle: { fontSize: '2.5rem', fontWeight: '700', marginBottom: '0.5rem' }, slideSubtext: { fontSize: '1.2rem' },
   heroForeground: { position: 'relative', zIndex: 10, display: 'flex', flexWrap:'wrap', justifyContent:'center', alignItems:'center', gap:'3rem', padding:'2rem', width:'100%', maxWidth:'1200px' },
   heroTextContainer: { flex: '1', minWidth: '300px', maxWidth: '650px', textAlign: 'left', color: 'white' },
   heroTitle: { fontSize: '3.5rem', fontWeight: '800', lineHeight: '1.1', marginBottom: '1rem' },
