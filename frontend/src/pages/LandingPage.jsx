@@ -30,7 +30,7 @@ const slides = [
   { id: 1, image: "/slide1.jpg", text: "It's a Match!", subtext: "Register and get paired instantly." },
   { id: 2, image: "/slide2.jpg", text: "Let's meet!", subtext: "Connect via WhatsApp immediately." },
   { id: 3, image: "/slide3.jpg", text: "Collaborate & Grow", subtext: "Work on Milestones and projects together." },
-  { id: 4, image: "/fit_logo.png", text: "FIT PeerFinder", subtext: "Global Skills Academy — Study together", isLogo: true }
+  { id: 4, image: "/Logo-Frontier-White-Transparent.png", text: "FIT PeerFinder", subtext: "Global Skills Academy — Study together", isLogo: true }
 ];
 
 const HeroSlideshow = () => {
@@ -165,7 +165,7 @@ const LandingPage = () => {
       {/* NAVBAR */}
       <nav style={styles.navbar}>
         <div style={styles.navLeft}>
-          <img src="/fit_logo.png" alt="Frontier Institute of Technology" style={{height: '38px', marginRight: '10px'}} /> 
+          <img src="/Logo-Frontier-Only.png" alt="Frontier Institute of Technology" style={{height: '38px', marginRight: '10px'}} /> 
           <span style={styles.logoText}>PeerFinder</span>
         </div>
         <div style={styles.navRight}>
