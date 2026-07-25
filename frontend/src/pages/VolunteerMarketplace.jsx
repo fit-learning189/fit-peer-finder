@@ -130,8 +130,7 @@ const VolunteerMarketplace = () => {
                   </div>
 
                   <div style={styles.detailsGrid}>
-                    <div style={styles.detailItem}><strong>🌍 Country:</strong> {vol.country || 'Global'}</div>
-                    <div style={styles.detailItem}><strong>⏱ Timezone:</strong> {vol.timezone || 'Flexible'}</div>
+                    <div style={styles.detailItem}><strong>📍 State:</strong> {vol.country || 'Anywhere in the US'}</div>
                   </div>
 
                   <div style={styles.capacitySection}>
