@@ -219,7 +219,6 @@ const LandingPage = () => {
                     {PROGRAMS.map(p => (
                       <motion.button key={p.id} whileHover={{ y: -3 }} style={styles.programCard} onClick={() => handleProgramSelection(p)}>
                         <div style={styles.programCardName}>{p.name}</div>
-                        <div style={styles.programCardMeta}>{p.courses.length} short courses</div>
                       </motion.button>
                     ))}
                   </div>
