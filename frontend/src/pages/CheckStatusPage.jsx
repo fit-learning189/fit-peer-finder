@@ -27,14 +27,14 @@ const CheckStatusPage = () => {
       >
         <h1 style={styles.title}>Check Match Status 🔍</h1>
         <p style={styles.subtitle}>
-          Enter your registered ALX email address to view all your active Short Course pairings and queue requests.
+          Enter your registered email address to view all your active Short Course pairings and queue requests.
         </p>
         
         <form onSubmit={handleSubmit} style={styles.form}>
           <motion.input 
             whileFocus={{ scale: 1.02, borderColor: colors.secondary.electricBlue }}
             style={styles.input} 
-            placeholder="e.g. learner@alxafrica.com" 
+            placeholder="e.g. learner@example.com" 
             value={inputIdx}
             onChange={(e) => setInputId(e.target.value)}
             required
