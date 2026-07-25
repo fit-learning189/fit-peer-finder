@@ -4,78 +4,27 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { colors, fonts } from '../theme';
 import { API_URL } from '../config';
+import HeroSlideshow from './HeroSlideshow';
 
-// --- MASTER VERTICAL CONFIGURATION ---
-const VERTICALS = {
-  CA: {
-    name: 'CAREER ACCELERATOR',
-    url: 'https://alx-peerfinder.vercel.app', 
-    programs: [
-      { id: 'VA', name: 'Virtual Assistant', courses: ['VA-1: VA Foundations & Professional Identity', 'VA-2: Core Professional & Soft Skills for VAs', 'VA-3: VA Tech Tools & Digital Productivity', 'VA-4: Essential VA Task Execution', 'VA-5: VA Career Readiness, Freelancing & Client Work', 'VA-6: VA Specialisation, Toolkit & Next Steps', 'Cohort 15'] },
-      { id: 'AiCE', name: 'AI Career Essentials', courses: ['AICE-1: AI Foundations for Work and Everyday Life', 'AICE-2: Prompting and Working Effectively with AI Models', 'AICE-3: Ethical and Responsible Use of AI at Work', 'AICE-4: Creating Professional Content with Generative AI', 'AICE-5: Data Analysis and Decision-Making with AI', 'AICE-6: Building an AI-Powered Professional Portfolio', 'Cohort 18'] },
-      { id: 'PF', name: 'Prof. Foundations', courses: ['Cohort 12', 'PF-1: Self-Leadership & Learning Foundations', 'PF-2: Data Literacy, Research, & Problem Framing', 'PF-3: Communication & Professional Writing', 'PF-4: Teamwork & Agile Workflows', 'PF-5: Career Exploration & Professional Identity'] }
-    ]
-  },
-  CREATIVE: {
-    name: 'CREATIVE TECH',
-    url: 'https://alx-peerfinder.vercel.app',
-    programs: [
-      { id: 'CC', name: 'Content Creation', courses: ['CC-1: Content Identity & Concept Development', 'CC-2: Content Creation Workflow', 'CC-3: AI-Enhanced Content Creation', 'CC-4: Animation & Motion Graphics Foundations', 'CC-5: Business Foundations for Content Creators'] },
-      { id: 'GD', name: 'Graphic Design', courses: ['GD-1: Graphic Design Software Fundamentals', 'GD-2: Foundations of Graphic Design & Visual Language', 'GD-3: Poster Design & Visual Composition', 'GD-4: Typography & Grid Systems', 'GD-5: Editorial & Magazine Design', 'GD-6: Designing for Social Media', 'GD-7: Brand Strategy for Designers', 'GD-8: AI for Graphic Design', 'GD-9: Graphic Design Portfolio Development', 'GD-10: Freelancing & Business Skills for Graphic Design'] }
-    ]
-  },
-  TECHLITE: {
-    name: 'TECH LITE',
-    url: 'https://alxs-techlite-peerfinder.vercel.app',
-    programs: [
-      { id: 'DA', name: 'Data Analytics', courses: ['DA-1: Data and AI Literacy Foundations', 'DA-2: Data Analytics with Spreadsheets', 'DA-3: SQL for Data', 'DA-4: PowerBI for Data Analytics', 'DA-5: Python for Data Analysis', 'DA-6: Statistical Reasoning', 'DA-7: Data Storytelling', 'DA-8: Advanced Excel', 'DA-9: Tableau for Analytics', 'DA-10: Data Analytics Capstone'] },
-      { id: 'DS', name: 'Data Science', courses: ['DS-1: Python I: Foundations', 'DS-2: Python II: Algorithmic Thinking', 'DS-3: Python III: EDA', 'DS-4: Machine Learning I', 'DS-5: Machine Learning II', 'DS-6: Machine Learning III', 'DS-7: NLP Foundations', 'DS-8: Deep Learning', 'DS-9: Computer Vision', 'DS-10: MLOps', 'DS-11: Data Science Capstone'] },
-      { id: 'SE', name: 'Software Engineering', courses: ['SE-1: Intro to SE', 'SE-2: Programming Basics', 'SE-3: Algorithmic Thinking', 'SE-4: Efficient Software Design', 'SE-5: Generative AI Engineering', 'SE-6: AI-Native Programming', 'SE-7: Agentic Workflows', 'SE-8: Code Quality', 'SE-9: Modern Web Languages', 'SE-10: UI Design', 'SE-11: Component Architecture', 'SE-12: Modern Rendering', 'SE-13: QA & Testing', 'SE-14: Backend Foundations', 'SE-15: Databases', 'SE-16: API Engineering', 'SE-17: Backend Security', 'SE-18: High Performance Systems', 'SE-19: Cloud Native Architecture', 'SE-20: DevOps & Production'] },
-      { id: 'DE', name: 'Data Engineering', courses: ['Cohort 4'] },
-      { id: 'CS', name: 'Cyber Security', courses: ['Cohort 4'] }
-    ]
-  },
-  VENTURES: {
-    name: 'ALX VENTURES',
-    url: 'https://alxventuress-peerfinder.vercel.app',
-    programs: [
-      { id: 'FA', name: 'Founders Academy', courses: ['FA-1: Startup Foundations', 'FA-2: MVP Building', 'FA-3: Startup Operations', 'FA-4: Investment Readiness'] },
-      { id: 'FLA', name: 'Freelance Academy', courses: ['FLA-1: Freelance Foundations', 'FLA-2: Client Acquisition', 'FLA-3: Scaling Your Business'] }
+// --- FIT PROGRAM CONFIGURATION ---
+// Flat list (no "vertical" grouping layer) since FIT currently runs one program.
+// Add more program objects here as FIT's Global Skills Academy grows — the UI
+// below will automatically render each as its own selectable tile in Step 1.
+const PROGRAMS = [
+  {
+    id: 'AIFW',
+    name: 'AI Fluency for the Workplace',
+    courses: [
+      'AIFW-1: AI Foundations for Work and Everyday Life',
+      'AIFW-2: Prompting and Working Effectively with AI Models',
+      'AIFW-3: AI Ethics and Responsible Governance',
+      'AIFW-4: Communicating and Creating with AI',
+      'AIFW-5: Data Analysis and Decision-Making with AI',
+      'AIFW-6: Building an AI-Powered Professional Portfolio',
+      'AIFW-7: Critical Thinking in the Age of AI'
     ]
   }
-};
-
-// --- SLIDESHOW DATA ---
-const slides = [
-  { id: 1, image: "/slide1.jpg", text: "It's a Match!", subtext: "Register and get paired instantly." },
-  { id: 2, image: "/slide2.jpg", text: "Let's meet!", subtext: "Connect via WhatsApp immediately." },
-  { id: 3, image: "/slide3.jpg", text: "Collaborate & Grow", subtext: "Work on Milestones and projects together." },
-  { id: 4, image: "/alx_white.png", text: "ALX Peer Finder", subtext: "Study together", isLogo: true }
 ];
-
-const HeroSlideshow = () => {
-  const [index, setIndex] = useState(0);
-  useEffect(() => {
-    const timer = setInterval(() => setIndex((prev) => (prev + 1) % slides.length), 5000);
-    return () => clearInterval(timer);
-  }, []);
-  return (
-    <div style={styles.slideshowContainer}>
-      <AnimatePresence mode='wait'>
-        <motion.div key={index} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 1.5 }} style={styles.slide}>
-          <div style={{...styles.image, backgroundImage: `url(${slides[index].image})`, backgroundSize: slides[index].isLogo ? 'contain' : 'cover'}} />
-          <div style={styles.overlay} />
-        </motion.div>
-      </AnimatePresence>
-      <div style={styles.slideContentWrapper}>
-        <motion.div key={index} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-          <h2 style={styles.slideTitle}>{slides[index].text}</h2>
-          <p style={styles.slideSubtext}>{slides[index].subtext}</p>
-        </motion.div>
-      </div>
-    </div>
-  );
-};
 
 // --- ANIMATED LEADERBOARD COMPONENT ---
 const Leaderboard = () => {
@@ -128,7 +77,6 @@ const LandingPage = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   // Selections
-  const [selectedVertical, setSelectedVertical] = useState(null);
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [selectedCourse, setSelectedCourse] = useState(null);
 
@@ -144,7 +92,7 @@ const LandingPage = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const resetModal = () => { setShowModal(false); setStep(1); setSelectedVertical(null); setSelectedProgram(null); setSelectedCourse(null); };
+  const resetModal = () => { setShowModal(false); setStep(1); setSelectedProgram(null); setSelectedCourse(null); };
 
   const handleModeSelection = (mode) => {
     setModalMode(mode);
@@ -152,38 +100,24 @@ const LandingPage = () => {
     setStep(1);
   };
 
-  // --- TRAFFIC CONTROLLER REDIRECT ---
-  const handleProgramSelection = (vertical, program) => {
-    setSelectedVertical(vertical);
+  const handleProgramSelection = (program) => {
     setSelectedProgram(program);
 
-    const isInternal = vertical.url === window.location.origin || vertical.url === 'https://alx-peerfinder.vercel.app';
-
     if (modalMode === 'STATUS') {
-        if (isInternal) navigate('/status/check');
-        else window.location.href = `${vertical.url}/status/check`;
+        navigate('/check-status');
         resetModal();
     } else if (modalMode === 'FEEDBACK') {
-        if (isInternal) navigate('/peer-feedback');
-        else window.location.href = `${vertical.url}/peer-feedback`;
+        navigate('/peer-feedback');
         resetModal();
     } else {
-        // REGISTER FLOW: Move to Step 2
+        // REGISTER FLOW: Move to Step 2 (course selection)
         setStep(2);
     }
   };
 
   const handleOptionSelect = (type) => {
-    const isInternal = selectedVertical.url === window.location.origin || selectedVertical.url === 'https://alx-peerfinder.vercel.app';
-    if (isInternal) {
-      const path = type === 'need' || type === 'Request Support' ? '/marketplace' : '/register';
-      navigate(path, { state: { program: selectedProgram.id, course: selectedCourse, connectionType: type } });
-    } else {
-      const path = type === 'need' || type === 'Request Support' ? 'marketplace' : 'register';
-      // FIX: Changed 'type' parameter back to 'connectionType' to match what the CT app expects!
-      const params = `?program=${selectedProgram.id}&course=${encodeURIComponent(selectedCourse)}&connectionType=${encodeURIComponent(type)}`;
-      window.location.href = `${selectedVertical.url}/${path}${params}`;
-    }
+    const path = type === 'need' ? '/marketplace' : '/register';
+    navigate(path, { state: { program: selectedProgram.id, course: selectedCourse, connectionType: type } });
     resetModal();
   };
 
@@ -200,7 +134,7 @@ const LandingPage = () => {
       {/* NAVBAR */}
       <nav style={styles.navbar}>
         <div style={styles.navLeft}>
-          <img src="/alx_icon-300x169.png" alt="ALX" style={{height: '35px', marginRight: '10px'}} /> 
+          <img src="/fit_logo.png" alt="Frontier Institute of Technology" style={{height: '38px', marginRight: '10px'}} /> 
           <span style={styles.logoText}>PeerFinder</span>
         </div>
         <div style={styles.navRight}>
@@ -246,20 +180,16 @@ const LandingPage = () => {
           <motion.div style={styles.modalOverlay} onClick={resetModal}>
             <motion.div style={{...styles.modalCard, maxWidth: step === 1 ? '1000px' : '600px'}} onClick={e => e.stopPropagation()}>
               
-              {/* STEP 1: CROSS-VERTICAL PROGRAM PICKER */}
+              {/* STEP 1: PROGRAM PICKER — flat list, ready to grow as FIT adds programs */}
               {step === 1 && (
                 <>
                   <h2 style={{color: colors.primary.berkeleyBlue, marginBottom: '30px'}}>First, select your program</h2>
-                  <div style={styles.masterGrid}>
-                    {Object.entries(VERTICALS).map(([key, vertical]) => (
-                      <div key={key} style={styles.verticalColumn}>
-                        <div style={styles.verticalHeader}>{vertical.name}</div>
-                        {vertical.programs.map(p => (
-                          <motion.button key={p.id} whileHover={{ x: 5 }} style={styles.programTile} onClick={() => handleProgramSelection(vertical, p)}>
-                            {p.name}
-                          </motion.button>
-                        ))}
-                      </div>
+                  <div style={styles.programGrid}>
+                    {PROGRAMS.map(p => (
+                      <motion.button key={p.id} whileHover={{ y: -3 }} style={styles.programCard} onClick={() => handleProgramSelection(p)}>
+                        <div style={styles.programCardName}>{p.name}</div>
+                        <div style={styles.programCardMeta}>{p.courses.length} short courses</div>
+                      </motion.button>
                     ))}
                   </div>
                 </>
@@ -284,21 +214,10 @@ const LandingPage = () => {
                   <button style={styles.backLink} onClick={() => setStep(2)}>&larr; Back</button>
                   <h2 style={{color: colors.primary.berkeleyBlue}}>How can we connect you?</h2>
                   <div style={styles.typeGrid}>
-                    {selectedVertical.name === 'ALX VENTURES' ? (
-                      <>
-                        <OptionCard title="Find / Be a Co-Founder" desc="(Build your team)" color={colors.primary.iris} onClick={() => handleOptionSelect('Find / Be a Co-Founder')} />
-                        <OptionCard title="Find a Study Buddy" desc="(Accountability Partner)" color="#FF9800" onClick={() => handleOptionSelect('Find a Study Buddy')} />
-                        <OptionCard title="Offer Support" desc="(Volunteer)" color={colors.primary.springGreen} textColor={colors.primary.berkeleyBlue} onClick={() => handleOptionSelect('Offer Support')} />
-                        <OptionCard title="Request Support" desc="(Browse peer help)" color={colors.secondary.tomato} onClick={() => handleOptionSelect('Request Support')} />
-                      </>
-                    ) : (
-                      <>
-                        <OptionCard title="Study Buddy" desc="(1-on-1 Partner)" color={colors.primary.iris} onClick={() => handleOptionSelect('find')} />
-                        <OptionCard title="Offer Support" desc="(Volunteer)" color={colors.primary.springGreen} textColor={colors.primary.berkeleyBlue} onClick={() => handleOptionSelect('offer')} />
-                        <OptionCard title="I Need Help" desc="(Browse peers)" color={colors.secondary.tomato} onClick={() => handleOptionSelect('need')} />
-                        <OptionCard title="Group Squad" desc="(Join a team of 3-5)" color="#FF9800" onClick={() => handleOptionSelect('group')} />
-                      </>
-                    )}
+                    <OptionCard title="Study Buddy" desc="(1-on-1 Partner)" color={colors.primary.iris} onClick={() => handleOptionSelect('find')} />
+                    <OptionCard title="Offer Support" desc="(Volunteer)" color={colors.primary.springGreen} textColor={colors.primary.berkeleyBlue} onClick={() => handleOptionSelect('offer')} />
+                    <OptionCard title="I Need Help" desc="(Browse peers)" color={colors.secondary.tomato} onClick={() => handleOptionSelect('need')} />
+                    <OptionCard title="Group Squad" desc="(Join a team of 3-5)" color={colors.raw.accentHover} onClick={() => handleOptionSelect('group')} />
                   </div>
                 </>
               )}
@@ -317,8 +236,8 @@ const LandingPage = () => {
       </div>
 
       <footer style={styles.footer}>
-        Built for the ALX Community. <br/>
-        © 2026 Peer Finder. All rights reserved.
+        Built for the Frontier Institute of Technology Community. <br/>
+        © 2026 FIT PeerFinder — Global Skills Academy. All rights reserved.
       </footer>
 
       {/* FEEDBACK SYSTEM */}
@@ -360,10 +279,6 @@ const styles = {
   dropdownMenu: { position: 'absolute', top: '50px', right: '0', background: 'white', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', width: '200px', zIndex: 100 },
   dropdownItem: { padding: '15px', cursor: 'pointer', textAlign: 'center', color: colors.primary.iris, fontWeight: 'bold' },
   heroSection: { minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position:'relative', overflow:'hidden' },
-  slideshowContainer: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' },
-  slide: { position: 'absolute', width: '100%', height: '100%' }, image: { width: '100%', height: '100%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }, overlay: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,43,86,0.6)' },
-  slideContentWrapper: { position: 'absolute', bottom: '15%', width: '100%', textAlign: 'center', color: 'white', zIndex: 2 },
-  slideTitle: { fontSize: '2.5rem', fontWeight: '700', marginBottom: '0.5rem' }, slideSubtext: { fontSize: '1.2rem' },
   heroForeground: { position: 'relative', zIndex: 10, display: 'flex', flexWrap:'wrap', justifyContent:'center', alignItems:'center', gap:'3rem', padding:'2rem', width:'100%', maxWidth:'1200px' },
   heroTextContainer: { flex: '1', minWidth: '300px', maxWidth: '650px', textAlign: 'left', color: 'white' },
   heroTitle: { fontSize: '3.5rem', fontWeight: '800', lineHeight: '1.1', marginBottom: '1rem' },
@@ -377,10 +292,10 @@ const styles = {
   iframe: { width: '100%', height: '100%', border: 'none' },
   modalOverlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
   modalCard: { background: 'white', padding: '2.5rem', borderRadius: '20px', width: '90%', maxHeight: '90vh', overflowY: 'auto' },
-  masterGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '25px', textAlign: 'left' },
-  verticalColumn: { display: 'flex', flexDirection: 'column', gap: '10px' },
-  verticalHeader: { fontSize: '0.8rem', fontWeight: '900', color: '#999', letterSpacing: '1px', marginBottom: '10px', borderBottom: '1px solid #eee', paddingBottom: '5px' },
-  programTile: { padding: '12px', borderRadius: '8px', border: '1px solid #eee', background: '#f9f9f9', textAlign: 'left', cursor: 'pointer', color: colors.primary.berkeleyBlue, fontWeight: '600', border: 'none' },
+  programGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', textAlign: 'left' },
+  programCard: { padding: '24px', borderRadius: '14px', border: `2px solid ${colors.raw.primary80}`, background: colors.raw.secondary80, textAlign: 'left', cursor: 'pointer' },
+  programCardName: { fontSize: '1.15rem', fontWeight: '700', color: colors.primary.berkeleyBlue, marginBottom: '6px' },
+  programCardMeta: { fontSize: '0.85rem', color: colors.raw.primary40, fontWeight: '500' },
   courseList: { display: 'flex', flexDirection: 'column', gap: '8px' },
   courseBtn: { padding: '12px', borderRadius: '10px', border: '1px solid #ddd', background: 'white', textAlign: 'left', cursor: 'pointer', color: colors.primary.berkeleyBlue, fontWeight: '500' },
   typeGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' },
