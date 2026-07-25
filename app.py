@@ -54,7 +54,7 @@ SESSION_FEEDBACK_OBJECT_KEY = 'fit-master-session_feedback.csv'
 NO_SHOW_OBJECT_KEY = 'fit-master-no_show.csv'
 UNPAIR_REASONS_KEY = 'fit-master-unpair_reasons.csv'
 
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
 def load_google_token(env_var_name):
     token_str = os.environ.get(env_var_name)
@@ -340,46 +340,30 @@ def availability_match(a1, a2):
     if not a1_clean or not a2_clean: return False
     return (a1_clean == 'flexible' or a2_clean == 'flexible' or a1_clean == a2_clean)
 
-def parse_tz_offset(tz_str):
-    if not tz_str or pd.isna(tz_str): return 0
-    tz_str = str(tz_str).upper()
-    if 'WAT' in tz_str: return 1
-    if 'CAT' in tz_str: return 2
-    if 'EAT' in tz_str: return 3
-    if 'GMT' in tz_str and '+' not in tz_str and '-' not in tz_str: return 0
-    match = re.search(r'UTC([+-]\d+)', tz_str)
-    if match: return int(match.group(1))
-    return 0
-
 def check_compatibility(user_a, peer_b):
     """
-    Returns True if BOTH users' match preferences are mutually satisfied.
+    FIT is US-only, so matching is simplified to just two preference levels
+    (no country/timezone/buffer hierarchy needed — that was for ALX's multi-country reach):
 
-    Preference hierarchy (each includes all levels below it):
-      Country  ⊂  Timezone  ⊂  Buffer  ⊂  Global
+      State  ⊂  Global
+
+    The 'country' column still holds the user's answer, but for FIT it now stores
+    a US state name (e.g. "Texas") rather than a country name.
 
     Examples:
-    - Chuks(Kenya, Country) + Claude(Kenya, Global) → True  ✓
-    - Chuks(Ghana, Buffer)  + Claude(Ghana, Global) → True  ✓
-    - Chuks(Egypt, Country) + Me(Egypt, Buffer)     → True  ✓
-    - Chuks(Kenya, Country) + Claude(Ghana, Global) → False ✓ (Chuks only wants Kenya)
+    - Learner A (Texas, State)  + Learner B (Texas, Global) → True  ✓ (same state, and Global accepts anyone)
+    - Learner A (Texas, State)  + Learner B (Ohio, Global)   → False ✓ (A only wants Texas)
+    - Learner A (Texas, Global) + Learner B (Ohio, Global)   → True  ✓ (both accept anyone)
     """
     pref_a = normalize_str(user_a.get('match_preference', 'global'))
     pref_b = normalize_str(peer_b.get('match_preference', 'global'))
 
-    country_a = normalize_str(user_a.get('country', ''))
-    country_b = normalize_str(peer_b.get('country', ''))
-    same_country = (country_a == country_b and country_a not in ['', 'nan'])
-
-    tz_a = parse_tz_offset(user_a.get('timezone', ''))
-    tz_b = parse_tz_offset(peer_b.get('timezone', ''))
-    same_tz = (tz_a == tz_b)
-    within_buffer = (abs(tz_a - tz_b) <= 2)
+    state_a = normalize_str(user_a.get('country', ''))
+    state_b = normalize_str(peer_b.get('country', ''))
+    same_state = (state_a == state_b and state_a not in ['', 'nan'])
 
     def is_satisfied(pref):
-        if pref == 'country':  return same_country
-        if pref == 'timezone': return same_country or same_tz
-        if pref == 'buffer':   return same_country or same_tz or within_buffer
+        if pref == 'state': return same_state
         return True  # 'global' accepts anyone; also the safe fallback
 
     return is_satisfied(pref_a) and is_satisfied(pref_b)
