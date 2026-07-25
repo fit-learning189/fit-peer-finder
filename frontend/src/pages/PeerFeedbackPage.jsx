@@ -13,11 +13,7 @@ const PeerFeedbackPage = () => {
 
   // LF4J CA Programs Data
   const programs = {
-    'VA': ['VA-1', 'VA-2', 'VA-3', 'VA-4', 'VA-5', 'VA-6'],
-    'AiCE': ['AICE-1', 'AICE-2', 'AICE-3', 'AICE-4', 'AICE-5', 'AICE-6'],
-    'PF': ['PF-1', 'PF-2', 'PF-3', 'PF-4', 'PF-5'],
-    'CC': ['CC-1', 'CC-2', 'CC-3', 'CC-4', 'CC-5'],
-    'GD': ['GD-1', 'GD-2', 'GD-3', 'GD-4', 'GD-5', 'GD-6', 'GD-7', 'GD-8', 'GD-9', 'GD-10']
+    'AIFW': ['AIFW-1', 'AIFW-2', 'AIFW-3', 'AIFW-4', 'AIFW-5', 'AIFW-6', 'AIFW-7']
   };
 
   // Ultra-Lean Form State
@@ -106,7 +102,7 @@ const PeerFeedbackPage = () => {
                     <label style={styles.label}>Your Program *</label>
                     <select style={styles.select} name="program" value={formData.program} onChange={handleChange} required>
                     <option value="">--Select--</option>
-                    {Object.keys(programs).map(p => <option key={p} value={p}>{p}</option>)}
+                    {Object.keys(programs).map(p => <option key={p} value={p}>{p === 'AIFW' ? 'AI Fluency for the Workplace' : p}</option>)}
                     </select>
                 </div>
                 <div>
@@ -131,7 +127,7 @@ const PeerFeedbackPage = () => {
             <AnimatePresence>
                 {formData.role === 'HelpSeeker' && (
                     <motion.div initial={{opacity:0, height:0}} animate={{opacity:1, height:'auto'}} exit={{opacity:0, height:0}}>
-                        <label style={{...styles.label, color: colors.primary.iris}}>Your Volunteer's ALX Email Address *</label>
+                        <label style={{...styles.label, color: colors.primary.iris}}>Your Volunteer's FIT Email Address *</label>
                         <p style={styles.hint}>Required so we can award them their well-deserved Legacy Points!</p>
                         <input style={{...styles.input, borderColor: colors.primary.iris}} type="email" name="volunteer_email" value={formData.volunteer_email} onChange={handleChange} required placeholder="Volunteer's Email" />
                     </motion.div>
@@ -170,7 +166,7 @@ const PeerFeedbackPage = () => {
                             Please enter the email(s) of peers who were absent. <br/>
                             <em>(💡 Tip: You can copy these from your Status Dashboard or Match Email. Separate multiple emails with a comma.)</em>
                         </p>
-                        <input style={{...styles.input, borderColor: '#ffcdd2'}} type="text" name="ghoster_emails" value={formData.ghoster_emails} onChange={handleChange} required placeholder="e.g., peer1@alx.com, peer2@alx.com" />
+                        <input style={{...styles.input, borderColor: '#ffcdd2'}} type="text" name="ghoster_emails" value={formData.ghoster_emails} onChange={handleChange} required placeholder="e.g., peer1@example.com, peer2@example.com" />
                       </div>
                   )}
 
@@ -227,16 +223,19 @@ const PeerFeedbackPage = () => {
             </motion.div>
           )}
 
-          {/* --- 5. THE eHUB REDIRECT (OFFICIAL SUPPORT) --- */}
+          {/* --- 5. ESCALATION LINK (OFFICIAL SUPPORT) --- */}
+          {/* TODO(Chuks): No FIT equivalent of ALX's eHub/Circle community exists yet.
+              Swap the href below for FIT's actual support channel (email, Slack, Circle, etc.)
+              once you have one — currently a placeholder mailto link so nothing is broken/misleading. */}
           <AnimatePresence>
               {showEscalationLink && formData.role !== 'Volunteer' && (
                   <motion.div initial={{opacity:0, scale:0.95}} animate={{opacity:1, scale:1}} style={{background: '#e3f2fd', border: `1px solid ${colors.secondary.electricBlue}`, padding: '15px', borderRadius: '8px', textAlign: 'center'}}>
                       <h3 style={{margin: '0 0 5px 0', fontSize: '1.1rem', color: colors.primary.berkeleyBlue}}>Need Official Support? 🆘</h3>
                       <p style={{fontSize: '0.9rem', color: '#555', marginBottom: '15px'}}>
-                          PeerFinder is for peer-to-peer collaboration. If you are still stuck and need escalated help, please visit the Circle platform to connect with our Community Ambassadors.
+                          PeerFinder is for peer-to-peer collaboration. If you are still stuck and need escalated help, please reach out to the FIT program support team.
                       </p>
-                      <a href="https://ehub.alxafrica.com/community" target="_blank" rel="noopener noreferrer" style={{display: 'inline-block', background: colors.primary.iris, color: 'white', padding: '10px 20px', borderRadius: '20px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem'}}>
-                          Go to eHub Community &rarr;
+                      <a href="mailto:support@frontierinstitute.tech" target="_blank" rel="noopener noreferrer" style={{display: 'inline-block', background: colors.primary.iris, color: 'white', padding: '10px 20px', borderRadius: '20px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem'}}>
+                          Contact Program Support &rarr;
                       </a>
                   </motion.div>
               )}
