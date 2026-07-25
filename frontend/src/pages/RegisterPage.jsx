@@ -44,7 +44,7 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   
   // Extract state passed from LandingPage or VolunteerMarketplace
-  const program = location.state?.program || 'AiCE';
+  const program = location.state?.program || 'AIFW';
   const course = location.state?.course || 'Unknown Course';
   const connectionType = location.state?.connectionType || 'find';
   const targetVolunteerId = location.state?.targetVolunteerId || null;
@@ -146,7 +146,7 @@ const RegisterPage = () => {
         <form onSubmit={handleSubmit} style={styles.form}>
            <div style={styles.row}>
              <div style={styles.half}><label style={styles.label}>Full Name *</label><input style={styles.input} name="name" onChange={handleChange} required /></div>
-             <div style={styles.half}><label style={styles.label}>Email Address(ALX registered) *</label><input style={styles.input} name="email" type="email" onChange={handleChange} required /></div>
+             <div style={styles.half}><label style={styles.label}>Email Address (FIT registered) *</label><input style={styles.input} name="email" type="email" onChange={handleChange} required /></div>
            </div>
            
            {/* MODIFIED: Pseudonym Field replaces Gender ONLY for Volunteers offering support */}
