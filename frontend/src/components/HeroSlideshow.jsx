@@ -8,7 +8,7 @@ const slides = [
   {
     id: 1,
     image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop", // Placeholder: Person on laptop
-    text: "You have been matched! 🎉",
+    text: "You have been matched!",
     subtext: "Register and get paired instantly."
   },
   {
@@ -20,13 +20,13 @@ const slides = [
   {
     id: 3,
     image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop", // Placeholder: Group studying
-    text: "Collaborate & Grow 🚀",
+    text: "Collaborate & Grow",
     subtext: "Work on projects together happily."
   },
   {
     id: 4,
-    image: "/Logo-Frontier-White-Transparent.png", // Your ALX Logo (make sure it's in public folder)
-    text: "FIT Peer Finder",
+    image: "/fit_logo.png", // FIT logo — place Logo-Frontier-White-Transparent.png in /public as fit_logo.png
+    text: "FIT PeerFinder",
     subtext: "Never study alone again.",
     isLogo: true // Special flag to style the logo differently
   }
