@@ -25,8 +25,8 @@ const slides = [
   },
   {
     id: 4,
-    image: "/alx_icon.png", // Your ALX Logo (make sure it's in public folder)
-    text: "ALX Peer Finder",
+    image: "/Logo-Frontier-White-Transparent.png", // Your ALX Logo (make sure it's in public folder)
+    text: "FIT Peer Finder",
     subtext: "Never study alone again.",
     isLogo: true // Special flag to style the logo differently
   }
