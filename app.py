@@ -48,11 +48,11 @@ AWS_S3_BUCKET = os.environ.get('AWS_S3_BUCKET', 'alx-peerfinder-storage-bucket')
 s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY, region_name=AWS_DEFAULT_REGION)
 
 # === MASTER FILE NAMES (ALL VERTICALS SHARE THESE NOW) ===
-CSV_OBJECT_KEY = 'alx-master-peerfinder.csv'
-FEEDBACK_OBJECT_KEY = 'alx-master-feedback.csv'
-SESSION_FEEDBACK_OBJECT_KEY = 'alx-master-session_feedback.csv'
-NO_SHOW_OBJECT_KEY = 'alx-master-no_show.csv'
-UNPAIR_REASONS_KEY = 'alx-master-unpair_reasons.csv'
+CSV_OBJECT_KEY = 'fit-master-peerfinder.csv'
+FEEDBACK_OBJECT_KEY = 'fit-master-feedback.csv'
+SESSION_FEEDBACK_OBJECT_KEY = 'fit-master-session_feedback.csv'
+NO_SHOW_OBJECT_KEY = 'fit-master-no_show.csv'
+UNPAIR_REASONS_KEY = 'fit-master-unpair_reasons.csv'
 
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
@@ -63,14 +63,12 @@ def load_google_token(env_var_name):
     except json.JSONDecodeError: return None
 
 # === MASTER PROGRAM CREDENTIALS (CA + CT) ===
+# === FIT — single program for now: 'AIFW' code maps to "AI Fluency for the Workplace" ===
+# NOTE: uses AIFW_EMAIL / AIFW_GOOGLE_TOKEN env vars on the FIT Render service. These currently
+# point at the same underlying foundations@alxafrica.com Gmail credential as ALX's 'PF' program,
+# but 'AIFW' is a distinct program code so this is fully decoupled from ALX going forward.
 PROGRAM_CREDENTIALS = {
-    'VA': { 'email': os.environ.get('VA_EMAIL', 'virtualassistant@alxafrica.com'), 'token': load_google_token('VA_GOOGLE_TOKEN') },
-    'AiCE': { 'email': os.environ.get('AICE_EMAIL', 'aice@alxafrica.com'), 'token': load_google_token('AICE_GOOGLE_TOKEN') },
-    'PF': { 'email': os.environ.get('PF_EMAIL', 'foundations@alxafrica.com'), 'token': load_google_token('PF_GOOGLE_TOKEN') },
-    'CC': { 'email': os.environ.get('CC_EMAIL', 'contentcreation@alxafrica.com'), 'token': load_google_token('CC_GOOGLE_TOKEN') },
-    'GD': { 'email': os.environ.get('GD_EMAIL', 'graphicdesign@alxafrica.com'), 'token': load_google_token('GD_GOOGLE_TOKEN') },
-    'FLA': { 'email': os.environ.get('FLA_EMAIL', 'programs@alx-ventures.com'), 'token': load_google_token('ALXVENTURES_GOOGLE_TOKEN') },
-    'FA': { 'email': os.environ.get('FA_EMAIL', 'programs@alx-ventures.com'), 'token': load_google_token('ALXVENTURES_GOOGLE_TOKEN') }
+    'AIFW': { 'email': os.environ.get('AIFW_EMAIL', 'foundations@alxafrica.com'), 'token': load_google_token('AIFW_GOOGLE_TOKEN') }
 }
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
@@ -97,8 +95,9 @@ def validate_registration(data):
     if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', data.get('email', '')): errors.append("Invalid email address format")
     if not re.match(r'^\+?[1-9]\d{1,14}$', data.get('phone', '').replace(' ', '')): errors.append("Invalid phone number")
 
-    # 🔴 VALIDATION NOW ACCEPTS ALL 7 PROGRAMS 🔴
-    if data.get('program') not in ['VA', 'AiCE', 'PF', 'CC', 'GD', 'FA', 'FLA']: errors.append("Invalid program selected")
+    # FIT currently offers a single program. Add new codes to this list as more programs launch
+    # (keep PROGRAM_CREDENTIALS in sync with any new codes added here).
+    if data.get('program') not in ['AIFW']: errors.append("Invalid program selected")
 
     if data.get('connection_type') not in ['find', 'offer', 'need', 'group']: errors.append("Invalid connection type")
     if data.get('connection_type') == 'offer' and not data.get('pseudonym'):
@@ -116,8 +115,8 @@ def api_wrapper(f):
     return wrapper
 
 def get_gmail_service(program_name):
-    # Fallback to AiCE if something goes wrong
-    if not program_name or program_name not in PROGRAM_CREDENTIALS: program_name = 'AiCE'
+    # Fallback to AIFW (AI Fluency for the Workplace) if something goes wrong — it's the only program credential configured for FIT
+    if not program_name or program_name not in PROGRAM_CREDENTIALS: program_name = 'AIFW'
     config = PROGRAM_CREDENTIALS[program_name]
     try:
         creds = Credentials.from_authorized_user_info(config['token'], SCOPES)
@@ -139,7 +138,7 @@ def send_email(to, subject, body, program_name, is_html=True):
         <html><body style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
         <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
             <div style="background-color: #091F40; padding: 20px; text-align: center;">
-                <h1 style="color: #ffffff; margin: 0; font-size: 24px;">ALX PeerFinder ({program_name})</h1>
+                <h1 style="color: #ffffff; margin: 0; font-size: 24px;">FIT PeerFinder — Global Skills Academy</h1>
             </div>
             <div style="padding: 30px; color: #333333; font-size: 16px; line-height: 1.6;">{body}</div>
         </div></body></html>"""
@@ -550,7 +549,7 @@ def perform_matching(df, user_id):
 
 @app.route('/', methods=['GET'])
 @api_wrapper
-def health(): return jsonify({"status": "active", "version": "CA_Modular_SmartVacuum_v2"})
+def health(): return jsonify({"status": "active", "version": "FIT_PeerFinder_v1", "deployment": "Frontier Institute of Technology"})
 
 @app.route('/api/register', methods=['POST'])
 @api_wrapper
@@ -927,7 +926,7 @@ def submit_peer_session_feedback():
                 ghoster_rows = main_df[main_df['email'] == g_email]
                 for idx, g_user in ghoster_rows.iterrows():
                     g_name = g_user.get('name', 'Learner')
-                    g_prog = g_user.get('program', data.get('program', 'PF'))
+                    g_prog = g_user.get('program', data.get('program', 'AIFW'))
                     g_type = g_user.get('connection_type', '')
 
                     subject = "PeerFinder - Session Attendance Notice"
