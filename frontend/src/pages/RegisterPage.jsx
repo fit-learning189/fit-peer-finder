@@ -6,37 +6,17 @@ import { colors, fonts } from '../theme';
 import Spinner from '../components/Spinner';
 import { API_URL } from '../config';
 
-// --- FULL LIST OF COUNTRIES ---
-const africanCountries = [
-  "Algeria", "Angola", "Benin", "Botswana", "Burkina Faso", "Burundi", "Cabo Verde",
-  "Cameroon", "Central African Republic", "Chad", "Comoros", "Congo (Brazzaville)",
-  "Congo (Kinshasa)", "Côte d'Ivoire", "Djibouti", "Egypt", "Equatorial Guinea",
-  "Eritrea", "Eswatini", "Ethiopia", "Gabon", "Gambia", "Ghana", "Guinea",
-  "Guinea-Bissau", "Kenya", "Lesotho", "Liberia", "Libya", "Madagascar", "Malawi",
-  "Mali", "Mauritania", "Mauritius", "Morocco", "Mozambique", "Namibia", "Niger",
-  "Nigeria", "Rwanda", "Sao Tome and Principe", "Senegal", "Seychelles",
-  "Sierra Leone", "Somalia", "South Africa", "South Sudan", "Sudan", "Tanzania",
-  "Togo", "Tunisia", "Uganda", "Zambia", "Zimbabwe", "Non-African"
+// --- US STATES (FIT is USA-only for now) ---
+const usStates = [
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
+  "Delaware", "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois",
+  "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts",
+  "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+  "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota",
+  "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina",
+  "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington",
+  "West Virginia", "Wisconsin", "Wyoming"
 ];
-
-// --- TIME ZONE MAPPING ---
-const countryToTimezone = {
-  "Algeria": "UTC+1", "Angola": "UTC+1", "Benin": "UTC+1", "Botswana": "UTC+2", "Burkina Faso": "UTC", "Burundi": "UTC+2", "Cabo Verde": "UTC-1",
-  "Cameroon": "UTC+1", "Central African Republic": "UTC+1", "Chad": "UTC+1", "Comoros": "UTC+3", "Congo (Brazzaville)": "UTC+1",
-  "Congo (Kinshasa)": "UTC+1", "Côte d'Ivoire": "UTC", "Djibouti": "UTC+3", "Egypt": "UTC+2", "Equatorial Guinea": "UTC+1",
-  "Eritrea": "UTC+3", "Eswatini": "UTC+2", "Ethiopia": "UTC+3", "Gabon": "UTC+1", "Gambia": "UTC", "Ghana": "UTC", "Guinea": "UTC",
-  "Guinea-Bissau": "UTC", "Kenya": "UTC+3", "Lesotho": "UTC+2", "Liberia": "UTC", "Libya": "UTC+2", "Madagascar": "UTC+3", "Malawi": "UTC+2",
-  "Mali": "UTC", "Mauritania": "UTC", "Mauritius": "UTC+4", "Morocco": "UTC+1", "Mozambique": "UTC+2", "Namibia": "UTC+2", "Niger": "UTC+1",
-  "Nigeria": "UTC+1", "Rwanda": "UTC+2", "Sao Tome and Principe": "UTC", "Senegal": "UTC", "Seychelles": "UTC+4",
-  "Sierra Leone": "UTC", "Somalia": "UTC+3", "South Africa": "UTC+2", "South Sudan": "UTC+2", "Sudan": "UTC+2", "Tanzania": "UTC+3",
-  "Togo": "UTC", "Tunisia": "UTC+1", "Uganda": "UTC+3", "Zambia": "UTC+2", "Zimbabwe": "UTC+2"
-};
-
-// --- HELPER: GENERATE UTC OFFSETS FOR NON-AFRICAN (-12 to +14) ---
-const utcOffsets = Array.from({ length: 27 }, (_, i) => {
-  const offset = i - 12;
-  return offset >= 0 ? `+${offset}` : `${offset}`;
-});
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -50,7 +30,7 @@ const RegisterPage = () => {
   const targetVolunteerId = location.state?.targetVolunteerId || null;
 
   const [formData, setFormData] = useState({
-    name: '', email: '', phone: '', country: '', timezone: '', language: '',
+    name: '', email: '', phone: '', country: '', language: '',
     match_preference: '', 
     learning_preferences: '', availability: '', meeting_preference: 'All', 
     group_size: '2', // Defaults to 2 for Study Buddy, will change for 'group'
@@ -69,18 +49,7 @@ const RegisterPage = () => {
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
     const name = e.target.name;
-
-    // Auto-fill timezone when country changes
-    if (name === 'country') {
-        if (value === 'Non-African') {
-            setFormData({ ...formData, country: value, timezone: '' }); // Clear it so they can pick
-        } else {
-            const tz = countryToTimezone[value] || '';
-            setFormData({ ...formData, country: value, timezone: tz });
-        }
-    } else {
-        setFormData({ ...formData, [name]: value });
-    }
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
@@ -171,54 +140,32 @@ const RegisterPage = () => {
 
            <div style={styles.row}>
               <div style={styles.half}>
-                  <label style={styles.label}>Country *</label>
-                  <select style={styles.select} name="country" onChange={handleChange} required>
+                  <label style={styles.label}>State *</label>
+                  <select style={styles.select} name="country" onChange={handleChange} required value={formData.country}>
                       <option value="">--Select--</option>
-                      {africanCountries.map(country => (
-                        <option key={country} value={country}>{country}</option>
+                      {usStates.map(state => (
+                        <option key={state} value={state}>{state}</option>
                       ))}
                   </select>
               </div>
               <div style={styles.half}>
-                  <label style={styles.label}>Time Zone *</label>
-                  {/* SMART TIMEZONE INPUT */}
-                  {formData.country === 'Non-African' ? (
-                      <div style={styles.tzWrapper}>
-                          <span style={{ fontWeight: 'bold', color: '#555' }}>UTC</span>
-                          <select style={styles.tzSelect} name="timezone" onChange={handleChange} required value={formData.timezone}>
-                              <option value="">--</option>
-                              {utcOffsets.map(off => <option key={off} value={`UTC${off}`}>{off}</option>)}
-                          </select>
-                      </div>
-                  ) : (
-                      <input 
-                          style={{...styles.input, backgroundColor: '#f5f5f5', color: '#888', cursor: 'not-allowed'}} 
-                          name="timezone" value={formData.timezone} readOnly placeholder="Auto-filled by country" required 
-                      />
-                  )}
-              </div>
-           </div>
-           
-           <div style={styles.row}>
-             <div style={styles.half}>
                   <label style={styles.label}>Language *</label>
                   <select style={styles.select} name="language" onChange={handleChange} required>
                       <option value="">--Select--</option>
                       <option value="English">English</option>
-                      <option value="French">French</option>
-                      <option value="Arabic">Arabic</option>
-                      <option value="Amharic">Amharic</option>
+                      <option value="Spanish">Spanish</option>
+                      <option value="Other">Other</option>
                   </select>
               </div>
+           </div>
+           
+           <div style={styles.row}>
              <div style={styles.half}>
                 <label style={styles.label}>Usual Availability *</label>
                 <select style={styles.select} name="availability" onChange={handleChange} required>
                  <option value="">--Select--</option><option value="Morning">Morning</option><option value="Afternoon">Afternoon</option><option value="Evening">Evening</option><option value="Flexible">Flexible / Anytime</option>
                 </select>
              </div>
-           </div>
-
-           <div style={styles.row}>
              <div style={styles.half}>
                 <label style={styles.label}>Preferred Meeting Method *</label>
                 <select style={styles.select} name="meeting_preference" onChange={handleChange} required value={formData.meeting_preference}>
@@ -230,6 +177,9 @@ const RegisterPage = () => {
                     <option value="Jitsi">Jitsi</option>
                 </select>
              </div>
+           </div>
+
+           <div style={styles.row}>
              <div style={styles.half}>
                 <label style={styles.label}>Learning Preference *</label>
                 <select style={styles.select} name="learning_preferences" onChange={handleChange} required>
@@ -250,10 +200,8 @@ const RegisterPage = () => {
                   <label style={styles.label}>Matching Priority (How should we pair you?) *</label>
                   <select style={styles.select} name="match_preference" onChange={handleChange} required value={formData.match_preference}>
                       <option value="">--Select Priority--</option>
-                      <option value="Country">Match me with a peer in the same country</option>
-                      <option value="Timezone">Match me with a peer in the same country OR time zone (Fast)</option>
-                      <option value="Buffer">Match me with any peer within +/- 2 hours range (Faster)</option>
-                      <option value="Global">Match me with any peer around the world (Fastest)</option>
+                      <option value="State">Match me with a peer in the same state</option>
+                      <option value="Global">Match me with any peer around the country (Fastest)</option>
                   </select>
                </div>
            )}
@@ -317,8 +265,6 @@ const styles = {
   label: { fontWeight: '600', fontSize: '0.9rem', color: colors.primary.berkeleyBlue, marginBottom: '5px', display: 'block' },
   input: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '1rem', boxSizing: 'border-box', outlineColor: colors.secondary.electricBlue },
   select: { width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '1rem', backgroundColor: 'white', boxSizing: 'border-box', outlineColor: colors.secondary.electricBlue },
-  tzWrapper: { display: 'flex', alignItems: 'center', background: 'white', border: '1px solid #ddd', borderRadius: '8px', paddingLeft: '12px', overflow: 'hidden' },
-  tzSelect: { border: 'none', background: 'transparent', width: '100%', padding: '12px 5px', outline: 'none', fontSize: '1rem', cursor: 'pointer' },
   submitButton: { padding: '15px', marginTop: '20px', background: `linear-gradient(45deg, ${colors.primary.iris}, ${colors.secondary.electricBlue})`, border: 'none', borderRadius: '30px', color: 'white', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer' },
   checkboxContainer: { display: 'flex', alignItems: 'center', marginTop: '10px' },
   primaryBtn: { padding: '12px 24px', background: colors.primary.iris, color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' },
