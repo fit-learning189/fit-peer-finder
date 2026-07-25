@@ -202,7 +202,8 @@ const StatusPage = () => {
 
                   <div style={{ marginTop: '20px', background: '#e3f2fd', padding: '15px', borderRadius: '10px', textAlign: 'center', border: '1px solid #b8daff' }}>
                       <h4 style={{ color: '#0056b3', margin: '0 0 5px 0', fontSize: '1rem' }}>🎥 Video Room</h4>
-                      <a href={`https://meet.jit.si/ALX-PeerFinder-${req.real_id || req.group[0]?.name.replace(/\s/g,'')}`} target="_blank" rel="noreferrer" style={{ background: '#0056b3', color: 'white', padding: '10px 20px', borderRadius: '30px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem', display: 'inline-block', marginTop: '5px' }}>Join Meeting</a>
+                      {/* FIX: Use req.group_id (the group's actual ID) so the link matches the one sent in the match email */}
+                      <a href={`https://meet.jit.si/ALX-PeerFinder-${req.group_id}`} target="_blank" rel="noreferrer" style={{ background: '#0056b3', color: 'white', padding: '10px 20px', borderRadius: '30px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem', display: 'inline-block', marginTop: '5px' }}>Join Meeting</a>
                   </div>
 
                   <div style={{ marginTop: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -278,7 +279,7 @@ const StatusPage = () => {
                 {unpairReason === "Ghosting / Partner didn't show up" && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} style={{marginTop: '10px', textAlign: 'left', overflow: 'hidden'}}>
                     <label style={{fontSize: '0.85rem', fontWeight: 'bold', color: '#c62828', display: 'block', marginBottom: '5px'}}>Flag the No-Show Learner</label>
-                    <input type="email" placeholder="Ghoster's ALX Email" value={ghosterEmail} onChange={(e) => setGhosterEmail(e.target.value)} style={{width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ffcdd2', boxSizing: 'border-box'}} required />
+                    <input type="email" placeholder="Ghoster's FIT Email" value={ghosterEmail} onChange={(e) => setGhosterEmail(e.target.value)} style={{width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ffcdd2', boxSizing: 'border-box'}} required />
                   </motion.div>
                 )}
                 {unpairReason === 'Other' && (
