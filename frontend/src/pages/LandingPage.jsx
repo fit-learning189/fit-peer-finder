@@ -319,7 +319,7 @@ const OptionCard = ({ title, desc, color, textColor='white', onClick }) => (
 const styles = {
   container: { minHeight: '100vh', background: colors.surface.base, fontFamily: fonts.main, position:'relative' },
   navbar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', background: colors.surface.raised, zIndex: 100, position:'relative' },
-  navLeft: { display: 'flex', alignItems: 'center' }, logoText: { color: colors.accent.azure, fontWeight: '700', fontSize: '1.5rem' },
+  navLeft: { display: 'flex', alignItems: 'center' }, logoText: { color: colors.accent.rose, fontWeight: '700', fontSize: '1.5rem' },
   navRight: { display: 'flex', alignItems: 'center' },
   diceMenu: { cursor: 'pointer', padding: '8px', background: colors.surface.base, borderRadius: '6px', width: '32px', height: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' },
   diceRow: { display: 'flex', justifyContent: 'space-between' }, diceRowCenter: { display: 'flex', justifyContent: 'center' }, diceDot: { width: '4px', height: '4px', background: colors.surface.base, borderRadius: '50%' },
@@ -352,7 +352,7 @@ const styles = {
   typeGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' },
   optionCard: { padding: '20px', borderRadius: '12px', border: 'none', cursor: 'pointer', textAlign: 'center' },
   backLink: { background: 'none', border: 'none', color: colors.text.lo, cursor: 'pointer', marginBottom: '15px', fontSize: '0.9rem' },
-  infoSection: { padding: '4rem 2rem', background: '#d1dbf8', color: colors.text.hi, textAlign: 'center' },
+  infoSection: { padding: '4rem 2rem', background: colors.surface.base, color: colors.text.hi, textAlign: 'center' },
   infoTitle: { fontSize: '1.5rem', fontWeight: '700', marginBottom: '1rem' }, infoText: { fontSize: '1.1rem', maxWidth: '700px', margin: '0 auto', marginBottom: '2rem' },
   footer: { background: colors.surface.base, color: colors.text.mute, textAlign: 'center', padding: '2rem', fontSize: '0.9rem' },
   feedbackBtn: { position: 'fixed', bottom: '20px', right: '20px', padding: '15px 25px', borderRadius: '35px', border: 'none', background: colors.accent.azure, color: '#FFFFFF', fontWeight: 600, fontSize: '1rem', cursor: 'pointer', zIndex: 100 },
