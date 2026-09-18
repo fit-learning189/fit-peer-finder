@@ -1,0 +1,74 @@
+/* FIT PeerFinder — global base
+   Dark-first. Component colour lives in src/theme.js; this file only covers
+   the things inline React styles cannot reach: document background, selection,
+   focus rings, scrollbars, autofill and placeholder colours. */
+
+:root {
+  --ink-base:   #0A1F30;
+  --ink-raised: #103049;
+  --ink-high:   #17435F;
+  --ink-line:   #21536F;
+  --text-hi:    #F1F5F7;
+  --text-lo:    #9FACB6;
+  --text-mute:  #708392;
+  --azure:      #4278EC;
+  --azure-hi:   #8EAEF4;
+  --lime:       #B4E000;
+  --rose:       #DF8CBB;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--ink-base);
+  color: var(--text-hi);
+  font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection { background: var(--azure); color: #FFFFFF; }
+
+:focus-visible {
+  outline: 2px solid var(--azure-hi);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Native form controls default to a light UA theme; this makes select
+   dropdowns, date pickers and scrollbars render dark to match. */
+:root { color-scheme: dark; }
+
+input::placeholder,
+textarea::placeholder { color: var(--text-mute); opacity: 1; }
+
+/* Chrome autofill repaints inputs bright yellow — override with an inset
+   shadow, the only reliable way to keep autofilled fields on-theme. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text-hi);
+  -webkit-box-shadow: 0 0 0 1000px var(--ink-base) inset;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--ink-base); }
+::-webkit-scrollbar-thumb {
+  background: var(--ink-line);
+  border-radius: 999px;
+  border: 2px solid var(--ink-base);
+}
+::-webkit-scrollbar-thumb:hover { background: #2E6A8F; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

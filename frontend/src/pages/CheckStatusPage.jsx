@@ -1,52 +1,52 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { colors, fonts } from '../theme';
+import { colors, fonts, ui } from '../theme';
 
 const CheckStatusPage = () => {
-  const [inputIdx, setInputId] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (inputIdx.trim()) {
-      // Passes the email/ID directly to the new Status Dashboard
-      navigate(`/status/${inputIdx.trim()}`);
+    if (identifier.trim()) {
+      navigate(`/status/${identifier.trim()}`);
     }
   };
 
   return (
     <div style={styles.container}>
-      <button style={styles.backBtn} onClick={() => navigate('/')}>&larr; Back</button>
+      <button style={styles.backBtn} onClick={() =>navigate('/')}>&larr; Back</button>
 
-      <motion.div 
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5, type: 'spring' }}
+      <motion.div
+        initial={{ y: 16, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
         style={styles.card}
       >
-        <h1 style={styles.title}>Check Match Status 🔍</h1>
+        <span style={styles.eyebrow}>Status Lookup</span>
+        <h1 style={styles.title}>Check your match status</h1>
         <p style={styles.subtitle}>
-          Enter your registered email address to view all your active Short Course pairings and queue requests.
+          Enter your registered email address to view your active short-course pairings and queue requests.
         </p>
-        
+
         <form onSubmit={handleSubmit} style={styles.form}>
-          <motion.input 
-            whileFocus={{ scale: 1.02, borderColor: colors.secondary.electricBlue }}
-            style={styles.input} 
-            placeholder="e.g. learner@example.com" 
-            value={inputIdx}
-            onChange={(e) => setInputId(e.target.value)}
+          <motion.input
+            whileFocus={{ borderColor: colors.accent.azure }}
+            style={styles.input}
+            type="email"
+            placeholder="you@example.com"
+            value={identifier}
+            onChange={(e) =>setIdentifier(e.target.value)}
             required
           />
-          
-          <motion.button 
-            whileHover={{ scale: 1.05 }} 
-            whileTap={{ scale: 0.95 }}
-            type="submit" 
+          <motion.button
+            whileHover={{ y: -2 }}
+            whileTap={{ y: 0 }}
+            type="submit"
             style={styles.button}
           >
-            Check Status 🚀
+            Check Status
           </motion.button>
         </form>
       </motion.div>
@@ -56,38 +56,62 @@ const CheckStatusPage = () => {
 
 const styles = {
   container: {
-    minHeight: '100vh',
-    background: colors.primary.berkeleyBlue,
-    display: 'flex', flexDirection: 'column',
-    justifyContent: 'center', alignItems: 'center',
-    fontFamily: fonts.main
+    ...ui.page,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '24px',
   },
   backBtn: {
-    position: 'absolute', top: '40px', left: '40px',
-    background: 'transparent', border: `1px solid ${colors.secondary.electricBlue}`,
-    color: colors.secondary.electricBlue, padding: '8px 16px', borderRadius: '20px',
-    cursor: 'pointer', fontWeight: 'bold'
+    ...ui.btnGhost,
+    position: 'absolute',
+    top: '32px',
+    left: '32px',
   },
   card: {
-    background: colors.primary.white,
-    padding: '3rem', borderRadius: '20px',
-    textAlign: 'center', maxWidth: '500px', width: '90%',
-    boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
+    ...ui.card,
+    padding: '2.75rem',
+    textAlign: 'center',
+    maxWidth: '480px',
+    width: '100%',
+    boxShadow: colors.shadow.lg,
   },
-  title: { color: colors.primary.berkeleyBlue, marginBottom: '10px' },
-  subtitle: { color: '#666', marginBottom: '30px', lineHeight: '1.5' },
-  form: { display: 'flex', flexDirection: 'column', gap: '20px' },
-  input: {
-    padding: '15px', fontSize: '1.1rem', borderRadius: '10px',
-    border: '2px solid #eee', textAlign: 'center', outline: 'none',
-    transition: 'border-color 0.3s'
+  eyebrow: {
+    display: 'block',
+    fontSize: '0.72rem',
+    fontWeight: 700,
+    letterSpacing: '0.16em',
+    textTransform: 'uppercase',
+    color: colors.accent.azureHi,
+    marginBottom: '12px',
+  },
+  title: {
+    color: colors.text.hi,
+    fontSize: '1.9rem',
+    fontWeight: 700,
+    margin: '0 0 12px 0',
+    letterSpacing: '-0.02em',
+  },
+  subtitle: {
+    color: colors.text.lo,
+    marginBottom: '28px',
+    lineHeight: 1.6,
+    fontSize: '0.95rem',
+  },
+  form: { display: 'flex', flexDirection: 'column', gap: '16px' },
+  input: { background: colors.surface.base, color: colors.text.hi,
+    ...ui.input,
+    padding: '14px 16px',
+    textAlign: 'center',
+    fontSize: '1rem',
+    transition: 'border-color 0.2s ease',
   },
   button: {
-    padding: '15px', background: colors.primary.iris, color: 'white',
-    border: 'none', borderRadius: '30px', fontSize: '1.1rem',
-    fontWeight: 'bold', cursor: 'pointer',
-    boxShadow: `0 5px 15px ${colors.primary.iris}66`
-  }
+    ...ui.btnPrimary,
+    padding: '14px',
+    fontSize: '1rem',
+  },
 };
 
 export default CheckStatusPage;

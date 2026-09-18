@@ -14,7 +14,7 @@ const slides = [
   {
     id: 2,
     image: "https://images.unsplash.com/photo-1555421689-491a97ff2040?q=80&w=2070&auto=format&fit=crop", // Placeholder: Phone/Chat
-    text: "💬 I'm available. Let's meet!",
+    text: " I'm available. Let's meet!",
     subtext: "Connect via WhatsApp immediately."
   },
   {
@@ -25,7 +25,7 @@ const slides = [
   },
   {
     id: 4,
-    image: "/fit_logo.png", // FIT logo — place Logo-Frontier-White-Transparent.png in /public as fit_logo.png
+    image: "/Logo-Frontier-White-Transparent.png",
     text: "FIT PeerFinder",
     subtext: "Never study alone again.",
     isLogo: true // Special flag to style the logo differently
@@ -40,13 +40,13 @@ const HeroSlideshow = () => {
     const timer = setInterval(() => {
       setIndex((prevIndex) => (prevIndex + 1) % slides.length);
     }, 4500); // 4.5 seconds per slide
-    return () => clearInterval(timer);
+    return () =>clearInterval(timer);
   }, []);
 
   return (
-    <div style={styles.container}>
-      <AnimatePresence mode='wait'>
-        <motion.div
+ <div style={styles.container}>
+ <AnimatePresence mode='wait'>
+ <motion.div
           key={index} // Key change triggers animation
           initial={{ opacity: 0, scale: 1.1 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -55,44 +55,44 @@ const HeroSlideshow = () => {
           style={styles.slide}
         >
           {/* Background Image */}
-          <div 
+ <div 
             style={{
-              ...styles.image, 
+...styles.image, 
               backgroundImage: `url(${slides[index].image})`,
-              backgroundSize: slides[index].isLogo ? 'contain' : 'cover',
+              backgroundSize: slides[index].isLogo? 'contain': 'cover',
               backgroundPosition: 'center'
             }} 
           />
-          
+
           {/* Dark Overlay so text pops */}
-          <div style={styles.overlay} />
+ <div style={styles.overlay} />
 
           {/* Text Content */}
-          <motion.div 
+ <motion.div 
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.5 }}
             style={styles.content}
           >
-            <h2 style={styles.text}>{slides[index].text}</h2>
-            <p style={styles.subtext}>{slides[index].subtext}</p>
-          </motion.div>
-        </motion.div>
-      </AnimatePresence>
+ <h2 style={styles.text}>{slides[index].text}</h2>
+ <p style={styles.subtext}>{slides[index].subtext}</p>
+ </motion.div>
+ </motion.div>
+ </AnimatePresence>
 
       {/* Progress Dots */}
-      <div style={styles.dots}>
+ <div style={styles.dots}>
         {slides.map((_, i) => (
-          <div 
+ <div 
             key={i} 
             style={{
-              ...styles.dot, 
-              backgroundColor: i === index ? colors.secondary.electricBlue : 'rgba(255,255,255,0.5)'
+...styles.dot, 
+              backgroundColor: i === index? colors.accent.azureHi: colors.line.base
             }} 
           />
         ))}
-      </div>
-    </div>
+ </div>
+ </div>
   );
 };
 
@@ -113,7 +113,7 @@ const styles = {
   overlay: {
     position: 'absolute', top: 0, left: 0,
     width: '100%', height: '100%',
-    background: `linear-gradient(to bottom, ${colors.primary.berkeleyBlue}cc, ${colors.primary.berkeleyBlue}ee)` 
+    background: `linear-gradient(to bottom, ${colors.surface.base}cc, ${colors.surface.base}ee)` 
     // ^ Heavy blue tint so it looks like a background
   },
   content: {
@@ -121,12 +121,12 @@ const styles = {
     textAlign: 'center', width: '100%', zIndex: 2
   },
   text: {
-    color: colors.secondary.electricBlue, fontFamily: fonts.main,
+    color: colors.accent.azureHi, fontFamily: fonts.main,
     fontSize: '2rem', fontWeight: 'bold', margin: 0,
     textShadow: '0 2px 10px rgba(0,0,0,0.5)'
   },
   subtext: {
-    color: 'white', fontFamily: fonts.main,
+    color: colors.text.hi, fontFamily: fonts.main,
     fontSize: '1.2rem', marginTop: '5px'
   },
   dots: {
