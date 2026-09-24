@@ -24,7 +24,7 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
 
   // Extract state passed from LandingPage or VolunteerMarketplace
-  const program = location.state?.program || 'AIFW';
+  const program = location.state?.program || 'FA';
   const course = location.state?.course || 'Unknown Course';
   const connectionType = location.state?.connectionType || 'find';
   const targetVolunteerId = location.state?.targetVolunteerId || null;
