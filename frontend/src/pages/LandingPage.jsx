@@ -11,16 +11,13 @@ import { API_URL } from '../config';
 // below will automatically render each as its own selectable tile in Step 1.
 const PROGRAMS = [
   {
-    id: 'AIFW',
-    name: 'AI Fluency for the Workplace',
+    id: 'FA',
+    name: 'Founder Academy',
     courses: [
- 'AIFW-1: AI Foundations for Work and Everyday Life',
- 'AIFW-2: Prompting and Working Effectively with AI Models',
- 'AIFW-3: AI Ethics and Responsible Governance',
- 'AIFW-4: Communicating and Creating with AI',
- 'AIFW-5: Data Analysis and Decision-Making with AI',
- 'AIFW-6: Building an AI-Powered Professional Portfolio',
- 'AIFW-7: Critical Thinking in the Age of AI'
+ 'FA-1: Startup Foundations - From Idea to Business',
+ 'FA-2: MVP Building - Your First Product',
+ 'FA-3: Startup Operations - Manage and Scale Your Business',
+ 'FA-4: Investment Readiness - Fundraising Essentials'
     ]
   }
 ];
