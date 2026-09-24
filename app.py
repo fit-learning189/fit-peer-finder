@@ -54,7 +54,7 @@ SESSION_FEEDBACK_OBJECT_KEY = 'fit-master-session_feedback.csv'
 NO_SHOW_OBJECT_KEY = 'fit-master-no_show.csv'
 UNPAIR_REASONS_KEY = 'fit-master-unpair_reasons.csv'
 
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD')
 
 def load_google_token(env_var_name):
     token_str = os.environ.get(env_var_name)
@@ -68,7 +68,7 @@ def load_google_token(env_var_name):
 # point at the same underlying foundations@alxafrica.com Gmail credential as ALX's 'PF' program,
 # but 'AIFW' is a distinct program code so this is fully decoupled from ALX going forward.
 PROGRAM_CREDENTIALS = {
-    'AIFW': { 'email': os.environ.get('AIFW_EMAIL', 'foundations@alxafrica.com'), 'token': load_google_token('AIFW_GOOGLE_TOKEN') }
+    'FA': { 'email': os.environ.get('AIFW_EMAIL', 'foundations@alxafrica.com'), 'token': load_google_token('AIFW_GOOGLE_TOKEN') }
 }
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
@@ -97,7 +97,7 @@ def validate_registration(data):
 
     # FIT currently offers a single program. Add new codes to this list as more programs launch
     # (keep PROGRAM_CREDENTIALS in sync with any new codes added here).
-    if data.get('program') not in ['AIFW']: errors.append("Invalid program selected")
+    if data.get('program') not in ['FA']: errors.append("Invalid program selected")
 
     if data.get('connection_type') not in ['find', 'offer', 'need', 'group']: errors.append("Invalid connection type")
     if data.get('connection_type') == 'offer' and not data.get('pseudonym'):
@@ -116,7 +116,7 @@ def api_wrapper(f):
 
 def get_gmail_service(program_name):
     # Fallback to AIFW (AI Fluency for the Workplace) if something goes wrong — it's the only program credential configured for FIT
-    if not program_name or program_name not in PROGRAM_CREDENTIALS: program_name = 'AIFW'
+    if not program_name or program_name not in PROGRAM_CREDENTIALS: program_name = 'FA'
     config = PROGRAM_CREDENTIALS[program_name]
     try:
         creds = Credentials.from_authorized_user_info(config['token'], SCOPES)
@@ -910,7 +910,7 @@ def submit_peer_session_feedback():
                 ghoster_rows = main_df[main_df['email'] == g_email]
                 for idx, g_user in ghoster_rows.iterrows():
                     g_name = g_user.get('name', 'Learner')
-                    g_prog = g_user.get('program', data.get('program', 'AIFW'))
+                    g_prog = g_user.get('program', data.get('program', ''))
                     g_type = g_user.get('connection_type', '')
 
                     subject = "PeerFinder - Session Attendance Notice"
