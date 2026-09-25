@@ -533,7 +533,7 @@ def perform_matching(df, user_id):
 
 @app.route('/', methods=['GET'])
 @api_wrapper
-def health(): return jsonify({"status": "active", "version": "FIT_PeerFinder_v1", "deployment": "Frontier Institute of Technology"})
+def health(): return jsonify({"status": "active", "version": "FIT_PeerFinder_v1.1_FA", "deployment": "Frontier Institute of Technology", "program": "FA"})
 
 @app.route('/api/register', methods=['POST'])
 @api_wrapper
