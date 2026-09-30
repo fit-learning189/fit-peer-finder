@@ -141,7 +141,7 @@ const RegisterPage = () => {
  <div style={styles.row}>
  <div style={styles.half}>
  <label style={styles.label}>State *</label>
- <select style={styles.select} name="country" onChange={handleChange} required value={formData.country}>
+ <select style={styles.select} name="State" onChange={handleChange} required value={formData.country}>
  <option value="">--Select--</option>
                       {usStates.map(state => (
  <option key={state} value={state}>{state}</option>
