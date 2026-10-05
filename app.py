@@ -63,10 +63,10 @@ def load_google_token(env_var_name):
     except json.JSONDecodeError: return None
 
 # === MASTER PROGRAM CREDENTIALS (CA + CT) ===
-# === FIT — single program for now: 'AIFW' code maps to "AI Fluency for the Workplace" ===
+# === FIT — single program for now: 'FA' code maps to "Founder Academy" ===
 # NOTE: uses AIFW_EMAIL / AIFW_GOOGLE_TOKEN env vars on the FIT Render service. These currently
 # point at the same underlying foundations@alxafrica.com Gmail credential as ALX's 'PF' program,
-# but 'AIFW' is a distinct program code so this is fully decoupled from ALX going forward.
+# (The env var names still say AIFW from the original program; they are kept so the Render settings need no change.)
 PROGRAM_CREDENTIALS = {
     'FA': { 'email': os.environ.get('AIFW_EMAIL', 'foundations@alxafrica.com'), 'token': load_google_token('AIFW_GOOGLE_TOKEN') }
 }
@@ -89,6 +89,13 @@ def check_rate_limit(ip):
     _rate_limit_store[ip] = timestamps
     return True
 
+# --- CO-FOUNDER OPTIONS (kept identical to the ALX Ventures PeerFinder so data stays compatible) ---
+COFOUNDER_SKILLS = ['Marketing', 'Sales', 'Backend Developer', 'Frontend Developer', 'Accountant',
+                    'Legal Associate', 'Fundraiser', 'Project Manager', 'Supply Chain']
+# Ordered lowest -> highest; the position in this list is the "experience rank" used to prefer closer matches
+COFOUNDER_LEVELS = ['Entry 0-2 years', 'Midlevel 2-5 years', 'Experienced 5+ years', 'Expert 12+ years']
+COFOUNDER_EQUITY = ['Vesting', 'Offer Salary', 'Offer Equity', "Can't offer any", 'Flexible']
+
 def validate_registration(data):
     errors = []
     if not data.get('name') or len(data['name'].strip()) < 2 or len(data['name']) > 100: errors.append("Name must be between 2 and 100 characters")
@@ -99,7 +106,14 @@ def validate_registration(data):
     # (keep PROGRAM_CREDENTIALS in sync with any new codes added here).
     if data.get('program') not in ['FA']: errors.append("Invalid program selected")
 
-    if data.get('connection_type') not in ['find', 'offer', 'need', 'group']: errors.append("Invalid connection type")
+    if data.get('connection_type') not in ['find', 'offer', 'need', 'group', 'cofounder']: errors.append("Invalid connection type")
+    if data.get('connection_type') == 'cofounder':
+        if data.get('cofounder_role') not in ['looking', 'offering']: errors.append("Please choose whether you are looking for a Co-Founder or want to be one")
+        if data.get('skill_type') not in COFOUNDER_SKILLS: errors.append("Please select a valid skill")
+        if data.get('skill_level') not in COFOUNDER_LEVELS: errors.append("Please select an experience level")
+        if data.get('equity_type') not in COFOUNDER_EQUITY: errors.append("Please select a compensation / equity option")
+        if data.get('cofounder_role') == 'looking' and str(data.get('cofounders_needed', '')) not in ['1', '2', '3']:
+            errors.append("Please select how many Co-Founders you need")
     if data.get('connection_type') == 'offer' and not data.get('pseudonym'):
          errors.append("A pseudonym is required for volunteers")
     return errors
@@ -115,7 +129,7 @@ def api_wrapper(f):
     return wrapper
 
 def get_gmail_service(program_name):
-    # Fallback to AIFW (AI Fluency for the Workplace) if something goes wrong — it's the only program credential configured for FIT
+    # Fallback to FA (Founder Academy) if something goes wrong — it's the only program credential configured for FIT
     if not program_name or program_name not in PROGRAM_CREDENTIALS: program_name = 'FA'
     config = PROGRAM_CREDENTIALS[program_name]
     try:
@@ -175,6 +189,16 @@ def notify_group_match(df, group_id, new_member_id=None):
         target_size = 2
     is_forming = is_peer_group and (current_size < target_size)
 
+    # Co-founder groups: size is the founder plus however many co-founders they asked for
+    is_cofounder_group = 'cofounder' in conn_types
+    if is_cofounder_group:
+        founder_rows = grp[(grp['connection_type'] == 'cofounder') & (grp['cofounder_role'].astype(str).str.lower() == 'looking')]
+        try: cf_needed = max(1, int(float(founder_rows.iloc[0].get('cofounders_needed', 1)))) if not founder_rows.empty else 1
+        except Exception: cf_needed = 1
+        target_size = 1 + cf_needed
+        is_forming = current_size < target_size
+    group_label = "co-founder group" if is_cofounder_group else "peer group"
+
     for _, current_user in grp.iterrows():
         is_existing_member = (new_member_id is not None and str(current_user['id']) != str(new_member_id))
 
@@ -185,7 +209,11 @@ def notify_group_match(df, group_id, new_member_id=None):
                 clean_phone = re.sub(r'\D', '', str(peer['phone']))
                 wa_link = f"https://wa.me/{clean_phone}"
                 meet_pref = str(peer.get('meeting_preference', 'All'))
-                role_label = "Volunteer" if peer['connection_type'] == 'offer' else "Peer" if peer['connection_type'] == 'need' else "Study Buddy"
+                role_label = "Volunteer" if peer['connection_type'] == 'offer' else "Peer" if peer['connection_type'] == 'need' else cofounder_label(peer) if peer['connection_type'] == 'cofounder' else "Study Buddy"
+                cf_extra = ""
+                if peer['connection_type'] == 'cofounder':
+                    cf_extra = (f'<span style="color: #555;">Experience: <strong>{peer.get("skill_level", "")}</strong></span><br/>'
+                                f'<span style="color: #555;">Compensation / equity: <strong>{peer.get("equity_type", "")}</strong></span><br/>')
                 display_name = peer['name']
 
                 peer_info_html += f"""
@@ -193,6 +221,7 @@ def notify_group_match(df, group_id, new_member_id=None):
                     <strong style="font-size: 18px; color: #091F40;">{display_name}</strong><br/>
                     <span style="color: #555;">📧 {peer['email']}</span><br/>
                     <span style="color: #555;">🎯 Role: <strong>{role_label}</strong></span><br/>
+                    {cf_extra}
                     <span style="color: #555;">📌 Prefers to meet via: <strong>{meet_pref}</strong></span><br/>
                     <div style="margin-top: 15px;">
                         <a href="{wa_link}" style="background-color: #25D366; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">WhatsApp</a>
@@ -216,7 +245,7 @@ def notify_group_match(df, group_id, new_member_id=None):
             body = f"""
             <h2 style="color: #091F40; margin-top: 0;">🔔 New Member Joined Your Group!</h2>
             Hi <strong>{current_user['name']}</strong>,<br/><br/>
-            <strong>{nm['name']}</strong> has just joined your peer group for <strong>{current_user.get('course', '')}</strong>!<br/><br/>
+            <strong>{nm['name']}</strong> has just joined your {group_label}{'' if is_cofounder_group else ' for <strong>' + str(current_user.get('course', '')) + '</strong>'}!<br/><br/>
             <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e0e0e0;">
                 <strong style="color: #091F40;">{nm['name']}</strong><br/>
                 <span style="color: #555;">📧 {nm['email']}</span><br/>
@@ -245,6 +274,16 @@ def notify_group_match(df, group_id, new_member_id=None):
                 custom_msg += f"Your group is now fully matched with all {cap} peers you requested to support!"
         elif is_needer:
             custom_msg = f"Hi <strong>{current_user['name']}</strong>,<br/><br/>Great news! You have been successfully paired with a Volunteer who is ready to support you (and potentially other peers)."
+        elif is_cofounder_group:
+            if is_forming:
+                custom_msg = (
+                    f"Hi <strong>{current_user['name']}</strong>,<br/><br/>"
+                    f"You have been matched on the Co-Founder matchmaker. Your group has <strong>{current_size - 1}</strong> other "
+                    f"member(s) so far (target: <strong>{target_size}</strong> including the founder). More co-founders will be added "
+                    f"as they register, and we will email you each time someone joins."
+                )
+            else:
+                custom_msg = f"Hi <strong>{current_user['name']}</strong>,<br/><br/>You have been matched with your Co-Founder(s). Here is their information:"
         elif is_forming:
             custom_msg = (
                 f"Hi <strong>{current_user['name']}</strong>,<br/><br/>"
@@ -288,7 +327,8 @@ def notify_group_match(df, group_id, new_member_id=None):
 REQUIRED_COLUMNS = [
     'id', 'name', 'phone', 'email', 'country', 'language', 'program', 'course', 'learning_preferences', 'availability',
     'match_preference', 'connection_type', 'timestamp', 'matched', 'group_id', 'unpair_reason', 'matched_timestamp',
-    'match_attempted', 'volunteer_capacity', 'meeting_preference', 'timezone', 'group_size', 'pseudonym', 'current_load'
+    'match_attempted', 'volunteer_capacity', 'meeting_preference', 'timezone', 'group_size', 'pseudonym', 'current_load',
+    'cofounder_role', 'skill_type', 'skill_level', 'equity_type', 'cofounders_needed'
 ]
 
 def clean_boolean(val):
@@ -304,7 +344,7 @@ def download_csv(key=CSV_OBJECT_KEY):
                 if col not in df.columns:
                     df[col] = False if col in ['matched', 'match_attempted'] else 0 if col == 'current_load' else ''
 
-            str_cols = ['id', 'name', 'phone', 'email', 'country', 'program', 'course', 'availability', 'connection_type', 'group_id', 'match_preference', 'learning_preferences', 'unpair_reason', 'timestamp', 'matched_timestamp', 'timezone', 'meeting_preference', 'volunteer_capacity', 'group_size', 'pseudonym']
+            str_cols = ['id', 'name', 'phone', 'email', 'country', 'program', 'course', 'availability', 'connection_type', 'group_id', 'match_preference', 'learning_preferences', 'unpair_reason', 'timestamp', 'matched_timestamp', 'timezone', 'meeting_preference', 'volunteer_capacity', 'group_size', 'pseudonym', 'cofounder_role', 'skill_type', 'skill_level', 'equity_type', 'cofounders_needed']
             for c in str_cols:
                 if c in df.columns: df[c] = df[c].astype(str).str.replace(r'\.0$', '', regex=True).str.replace(r'\s+', ' ', regex=True).str.strip().replace('nan', '')
 
@@ -374,6 +414,28 @@ def get_course_num(course_str):
         return int(match.group(1)) if match else 0
     except: return 0
 
+def experience_rank(level):
+    """Position of an experience level in COFOUNDER_LEVELS (None if unknown)."""
+    try: return COFOUNDER_LEVELS.index(str(level).strip())
+    except ValueError: return None
+
+def experience_gap(founder_row, offerer_row):
+    """
+    How far apart two co-founders are on experience. For the founder who is 'looking', skill_level is the level
+    they WANT; for the one 'offering', it is the level they HAVE. A smaller gap is a closer match.
+    Unknown levels sort last instead of raising.
+    """
+    a = experience_rank(founder_row.get('skill_level', ''))
+    b = experience_rank(offerer_row.get('skill_level', ''))
+    if a is None or b is None: return 99
+    return abs(a - b)
+
+def cofounder_label(row):
+    """Readable role text used in emails."""
+    if str(row.get('cofounder_role', '')).strip().lower() == 'looking':
+        return f"Co-Founder (looking for: {row.get('skill_type', '')})"
+    return f"Co-Founder (skill: {row.get('skill_type', '')})"
+
 # === THE SMART MATCHING ENGINE ===
 def perform_matching(df, user_id):
     """
@@ -410,7 +472,131 @@ def perform_matching(df, user_id):
         (df['id'] != user_id)
     ]
 
-    if user['connection_type'] in ['find', 'group']:
+    if user['connection_type'] == 'cofounder':
+        # ------------------------------------------------------------------
+        # CO-FOUNDER MATCHMAKER (Founder Academy)
+        #  - Opposite roles: a 'looking' founder is paired with 'offering' co-founders who have the SAME skill.
+        #  - The short course is deliberately ignored: matching spans every Founder Academy course.
+        #  - Location follows the same State/Global rule as every other FIT connection type (mutual).
+        #  - Experience level is a preference, not a filter: among compatible people the closest
+        #    experience gap is chosen first, then whoever has waited longest.
+        #  - 'looking' founders choose how many co-founders they need (1-3). The group forms as soon as one
+        #    compatible co-founder exists and fills up as more register, like FIT's other groups.
+        # ------------------------------------------------------------------
+        u_role = normalize_str(user.get('cofounder_role', ''))
+        u_skill = normalize_str(user.get('skill_type', ''))
+        u_email = str(user.get('email', '')).strip().lower()
+        u_phone = str(user.get('phone', '')).strip()
+        u_dict = user.to_dict()
+
+        def _cf_needed(row):
+            try: return max(1, int(float(row.get('cofounders_needed', 1))))
+            except (TypeError, ValueError): return 1
+
+        def _is_same_person(row):
+            # Guards against someone registering as both roles and being matched with themselves
+            same_email = str(row.get('email', '')).strip().lower() == u_email
+            same_phone = bool(u_phone) and str(row.get('phone', '')).strip() == u_phone
+            return same_email or same_phone
+
+        def _fits_group(candidate_idx, chosen_idxs):
+            cand = df.loc[candidate_idx].to_dict()
+            return all(check_compatibility(cand, df.loc[c].to_dict()) for c in chosen_idxs)
+
+        cf_pool = df[
+            (df['matched'] == False) & (df['id'] != user_id) &
+            (df['connection_type'] == 'cofounder') &
+            (df['program'].apply(normalize_str) == u_program) &
+            (df['skill_type'].apply(normalize_str) == u_skill)
+        ]
+
+        if u_role == 'looking':
+            needed = _cf_needed(user)
+            candidates = []
+            for p_idx, peer in cf_pool[cf_pool['cofounder_role'].apply(normalize_str) == 'offering'].iterrows():
+                if _is_same_person(peer): continue
+                peer_d = peer.to_dict()
+                if not check_compatibility(u_dict, peer_d): continue
+                candidates.append((experience_gap(u_dict, peer_d), str(peer.get('timestamp', '')), p_idx))
+            candidates.sort()
+
+            chosen = []
+            for _, _, p_idx in candidates:
+                if len(chosen) >= needed: break
+                if _fits_group(p_idx, chosen): chosen.append(p_idx)
+
+            if chosen:
+                all_idx = [idx] + chosen
+                df.loc[all_idx, 'matched'] = True
+                df.loc[all_idx, 'group_id'] = gid
+                df.loc[all_idx, 'matched_timestamp'] = iso
+                df.loc[all_idx, 'unpair_reason'] = ''
+                updated = True
+
+        elif u_role == 'offering':
+            # (a) Join an existing founder group that still has an open slot
+            anchors = df[
+                (df['connection_type'] == 'cofounder') & (df['matched'] == True) &
+                (df['cofounder_role'].apply(normalize_str) == 'looking') &
+                (df['program'].apply(normalize_str) == u_program) &
+                (df['skill_type'].apply(normalize_str) == u_skill) &
+                (df['group_id'].astype(str).str.strip() != '')
+            ]
+            open_groups = []
+            for a_idx, founder in anchors.iterrows():
+                if _is_same_person(founder): continue
+                members = df[df['group_id'] == founder['group_id']]
+                offerers = members[members['cofounder_role'].apply(normalize_str) == 'offering']
+                if len(offerers) >= _cf_needed(founder): continue
+                if not all(check_compatibility(u_dict, m.to_dict()) for _, m in members.iterrows()): continue
+                open_groups.append((experience_gap(founder.to_dict(), u_dict), str(founder.get('timestamp', '')), founder['group_id']))
+
+            if open_groups:
+                open_groups.sort()
+                join_gid = open_groups[0][2]
+                df.at[idx, 'matched'] = True
+                df.at[idx, 'group_id'] = join_gid
+                df.at[idx, 'matched_timestamp'] = iso
+                df.at[idx, 'unpair_reason'] = ''
+                gid = join_gid
+                updated = True
+                joined_existing = True
+            else:
+                # (b) Pair with a waiting 'looking' founder (plus other waiting offerers up to their need)
+                founders = []
+                for f_idx, f in cf_pool[cf_pool['cofounder_role'].apply(normalize_str) == 'looking'].iterrows():
+                    if _is_same_person(f): continue
+                    f_d = f.to_dict()
+                    if not check_compatibility(u_dict, f_d): continue
+                    founders.append((experience_gap(f_d, u_dict), str(f.get('timestamp', '')), f_idx))
+
+                if founders:
+                    founders.sort()
+                    f_idx = founders[0][2]
+                    f_d = df.loc[f_idx].to_dict()
+                    needed = _cf_needed(f_d)
+
+                    others = []
+                    for o_idx, o in cf_pool[cf_pool['cofounder_role'].apply(normalize_str) == 'offering'].iterrows():
+                        if _is_same_person(o): continue
+                        o_d = o.to_dict()
+                        if not check_compatibility(f_d, o_d): continue
+                        others.append((experience_gap(f_d, o_d), str(o.get('timestamp', '')), o_idx))
+                    others.sort()
+
+                    chosen = [idx]
+                    for _, _, o_idx in others:
+                        if len(chosen) >= needed: break
+                        if _fits_group(o_idx, chosen): chosen.append(o_idx)
+
+                    all_idx = [f_idx] + chosen
+                    df.loc[all_idx, 'matched'] = True
+                    df.loc[all_idx, 'group_id'] = gid
+                    df.loc[all_idx, 'matched_timestamp'] = iso
+                    df.loc[all_idx, 'unpair_reason'] = ''
+                    updated = True
+
+    elif user['connection_type'] in ['find', 'group']:
         size_str = str(user['group_size']).replace('.0', '').strip() if pd.notna(user.get('group_size')) and user.get('group_size') else '2'
         if not size_str or not size_str.isdigit(): size_str = '2'
         target_size = int(size_str)
@@ -533,7 +719,7 @@ def perform_matching(df, user_id):
 
 @app.route('/', methods=['GET'])
 @api_wrapper
-def health(): return jsonify({"status": "active", "version": "FIT_PeerFinder_v1.1_FA", "deployment": "Frontier Institute of Technology", "program": "FA"})
+def health(): return jsonify({"status": "active", "version": "FIT_PeerFinder_v1.2_FA_Cofounder", "deployment": "Frontier Institute of Technology", "program": "FA"})
 
 @app.route('/api/register', methods=['POST'])
 @api_wrapper
@@ -554,7 +740,12 @@ def register():
     df = download_csv()
     capacity_val = data.get('volunteer_capacity', '3') if data['connection_type'] == 'offer' else '0'
 
-    existing_mask = ((df['email'] == email) | (df['phone'] == phone)) & (df['connection_type'] == data['connection_type']) & (df['course'] == data['course'])
+    if data['connection_type'] == 'cofounder':
+        # Co-founder matching ignores the short course, so a duplicate is the same person registering
+        # the same co-founder role again, whichever course they came in from.
+        existing_mask = ((df['email'] == email) | (df['phone'] == phone)) & (df['connection_type'] == 'cofounder') & (df['cofounder_role'] == data.get('cofounder_role', ''))
+    else:
+        existing_mask = ((df['email'] == email) | (df['phone'] == phone)) & (df['connection_type'] == data['connection_type']) & (df['course'] == data['course'])
     if not df[existing_mask].empty:
         idx = existing_mask.idxmax()
         existing = df.loc[idx]
@@ -571,7 +762,12 @@ def register():
         'timestamp': datetime.now(timezone.utc).isoformat(), 'matched': False, 'group_id': '', 'unpair_reason': '',
         'matched_timestamp': '', 'match_attempted': False, 'volunteer_capacity': capacity_val,
         'current_load': 0, 'meeting_preference': data.get('meeting_preference', 'All'), 'timezone': data.get('timezone', ''),
-        'pseudonym': data.get('pseudonym', '')
+        'pseudonym': data.get('pseudonym', ''),
+        'cofounder_role': data.get('cofounder_role', '') if data['connection_type'] == 'cofounder' else '',
+        'skill_type': data.get('skill_type', '') if data['connection_type'] == 'cofounder' else '',
+        'skill_level': data.get('skill_level', '') if data['connection_type'] == 'cofounder' else '',
+        'equity_type': data.get('equity_type', '') if data['connection_type'] == 'cofounder' else '',
+        'cofounders_needed': str(data.get('cofounders_needed', '')) if data['connection_type'] == 'cofounder' and data.get('cofounder_role') == 'looking' else ''
     }
 
     target_volunteer_id = data.get('target_volunteer_id')
@@ -677,7 +873,12 @@ def status(identifier):
             "user": {
                 "name": u['name'], "program": u.get('program', ''), "course": u['course'],
                 "connection_type": str(u.get('connection_type', '')),
-                "volunteer_capacity": str(u.get('volunteer_capacity', ''))
+                "volunteer_capacity": str(u.get('volunteer_capacity', '')),
+                "cofounder_role": str(u.get('cofounder_role', '')),
+                "skill_type": str(u.get('skill_type', '')),
+                "skill_level": str(u.get('skill_level', '')),
+                "equity_type": str(u.get('equity_type', '')),
+                "cofounders_needed": str(u.get('cofounders_needed', ''))
             },
             "real_id": str(u['id'])
         }
@@ -686,7 +887,7 @@ def status(identifier):
             grp = df[df['group_id'] == u['group_id']]
             # FIX #1: Include group_id so the frontend can build the correct Jitsi room URL
             res['group_id'] = str(u['group_id'])
-            res['group'] = grp[['name', 'email', 'phone', 'connection_type', 'meeting_preference']].fillna("").to_dict('records')
+            res['group'] = grp[['name', 'email', 'phone', 'connection_type', 'meeting_preference', 'cofounder_role', 'skill_type', 'skill_level', 'equity_type']].fillna("").to_dict('records')
         res_list.append(res)
 
     return jsonify(res_list)
@@ -847,7 +1048,19 @@ def leave_group():
     if old_group_id and old_group_id not in ('', 'nan'):
         other_members = df[(df['group_id'] == old_group_id) & (df['id'] != target_id)]
 
-        if not other_members.empty:
+        if not other_members.empty and str(df.at[idx, 'connection_type']) == 'cofounder':
+            # Co-founder group: the 'looking' founder anchors it.
+            #  - founder leaves            -> the group dissolves, everyone else goes back to the queue
+            #  - an offering co-founder leaves -> only they leave; the founder is re-queued only if nobody is left with them
+            leaver_role = str(df.at[idx, 'cofounder_role']).strip().lower()
+            remaining_offerers = other_members[other_members['cofounder_role'].astype(str).str.lower() == 'offering']
+            if leaver_role == 'looking' or remaining_offerers.empty:
+                for o_idx in other_members.index.tolist():
+                    df.at[o_idx, 'matched'] = False
+                    df.at[o_idx, 'group_id'] = ''
+                    df.at[o_idx, 'timestamp'] = datetime.now(timezone.utc).isoformat()
+                    df.at[o_idx, 'match_attempted'] = False
+        elif not other_members.empty:
             # Update volunteer's capacity counter if one exists in the group
             vol_in_group = other_members[other_members['connection_type'] == 'offer']
             if not vol_in_group.empty:
@@ -958,7 +1171,9 @@ def submit_peer_session_feedback():
         'rematch_request': data.get('rematch_request', ''),
         'overall_rating': data.get('overall_rating', 0),
         'progress': data.get('progress', ''),
-        'feedback_details': data.get('feedback_details', '')
+        'feedback_details': data.get('feedback_details', ''),
+        'cf_synergy': data.get('cf_synergy', ''),
+        'cf_continue': data.get('cf_continue', '')
     }
     df_feedback = pd.concat([df_feedback, pd.DataFrame([new_row])], ignore_index=True)
     upload_csv(df_feedback, SESSION_FEEDBACK_OBJECT_KEY)
@@ -1047,8 +1262,10 @@ def random_pair():
     if bool(t_row.iloc[0]['matched']): return jsonify({"error": "Already matched"}), 400
 
     user = t_row.iloc[0]
+    if str(user['connection_type']) == 'cofounder':
+        return jsonify({"success": False, "message": "Random pairing is not available for Co-Founders. Select the people and use manual pairing instead."}), 200
     size = str(user['group_size']).replace('.0', '').strip() if pd.notna(user['group_size']) else '2'
-    pool = df[(df['matched'] == False) & (df['id'] != tid) & (df['program'].apply(normalize_str) == normalize_str(user['program'])) & (df['group_size'].astype(str).str.replace('.0', '', regex=False).str.strip() == size)]
+    pool = df[(df['matched'] == False) & (df['id'] != tid) & (df['connection_type'] != 'cofounder') & (df['program'].apply(normalize_str) == normalize_str(user['program'])) & (df['group_size'].astype(str).str.replace('.0', '', regex=False).str.strip() == size)]
 
     needed = int(size) - 1
     if len(pool) < needed: return jsonify({"success": False, "message": "Not enough learners in the queue for this group size."}), 200
