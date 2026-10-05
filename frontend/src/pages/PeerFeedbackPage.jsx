@@ -26,7 +26,7 @@ const PeerFeedbackPage = () => {
 
   // LF4J CA Programs Data
   const programs = {
- 'AIFW': ['AIFW-1', 'AIFW-2', 'AIFW-3', 'AIFW-4', 'AIFW-5', 'AIFW-6', 'AIFW-7']
+ 'FA': ['FA-1', 'FA-2', 'FA-3', 'FA-4']
   };
 
   // Ultra-Lean Form State
@@ -41,7 +41,8 @@ const PeerFeedbackPage = () => {
     rematch_request: '',
     overall_rating: 0,
     progress: '',
-    feedback_details: '' // Consolidated open text for rating <= 3
+    feedback_details: '', // Consolidated open text for rating <= 3
+    cf_synergy: '', cf_continue: '' // Co-Founder only
   });
 
   const handleChange = (e) => {
@@ -115,7 +116,7 @@ const PeerFeedbackPage = () => {
  <label style={styles.label}>Your Program *</label>
  <select style={styles.select} name="program" value={formData.program} onChange={handleChange} required>
  <option value="">--Select--</option>
-                    {Object.keys(programs).map(p => <option key={p} value={p}>{p === 'AIFW'? 'AI Fluency for the Workplace': p}</option>)}
+                    {Object.keys(programs).map(p => <option key={p} value={p}>{p === 'FA'? 'Founder Academy': p}</option>)}
  </select>
  </div>
  <div>
@@ -134,6 +135,7 @@ const PeerFeedbackPage = () => {
  <option value="HelpSeeker">Peer (I requested help)</option>
  <option value="StudyBuddy">Study Buddy (1-on-1 equal collaboration)</option>
  <option value="GroupMember">Group Member (Team squad)</option>
+ <option value="CoFounder">Co-Founder (We met as potential Co-Founders)</option>
  </select>
 
             {/* Smart Email Collection: Only show for Help Seekers */}
@@ -209,8 +211,29 @@ const PeerFeedbackPage = () => {
                   ))}
  </div>
 
+                {/* Co-Founder questions (replace the deliverable-progress question, which does not apply to founding teams) */}
+                {formData.role === 'CoFounder' && formData.overall_rating > 0 && (
+ <motion.div initial={{opacity:0}} animate={{opacity:1}} style={{marginTop: '15px'}}>
+ <label style={styles.label}>Did you feel a strong professional synergy with this peer? *</label>
+ <select style={styles.select} name="cf_synergy" value={formData.cf_synergy} onChange={handleChange} required>
+ <option value="">--Select--</option>
+ <option value="Yes, strong alignment">Yes, strong alignment</option>
+ <option value="Somewhat">Somewhat</option>
+ <option value="No, not a good fit">No, not a good fit</option>
+ </select>
+
+ <label style={{...styles.label, marginTop: '15px', display: 'block'}}>Do you plan to continue collaborating or formalize a relationship? *</label>
+ <select style={styles.select} name="cf_continue" value={formData.cf_continue} onChange={handleChange} required>
+ <option value="">--Select--</option>
+ <option value="Yes, we are teaming up">Yes, we are teaming up</option>
+ <option value="Maybe, still discussing">Maybe, still discussing</option>
+ <option value="No, going separate ways">No, going separate ways</option>
+ </select>
+ </motion.div>
+                )}
+
                 {/* Progress Dropdown (Hidden for Volunteers) */}
-                {formData.role!== 'Volunteer' && formData.overall_rating > 0 && (
+                {formData.role!== 'Volunteer' && formData.role!== 'CoFounder' && formData.overall_rating > 0 && (
  <motion.div initial={{opacity:0}} animate={{opacity:1}} style={{marginTop: '15px'}}>
  <label style={styles.label}>What best describes your progress after the peer session? *</label>
  <select style={styles.select} name="progress" value={formData.progress} onChange={handleChange} required>
@@ -243,7 +266,7 @@ const PeerFeedbackPage = () => {
               Swap the href below for FIT's actual support channel (email, Slack, Circle, etc.)
               once you have one — currently a placeholder mailto link so nothing is broken/misleading. */}
  <AnimatePresence>
-              {showEscalationLink && formData.role!== 'Volunteer' && (
+              {showEscalationLink && formData.role!== 'Volunteer' && formData.role!== 'CoFounder' && (
  <motion.div initial={{opacity:0, scale:0.95}} animate={{opacity:1, scale:1}} style={{background: colors.surface.base, border: `1px solid ${colors.accent.azureHi}`, padding: '15px', borderRadius: '8px', textAlign: 'center'}}>
  <h3 style={{margin: '0 0 5px 0', fontSize: '1.1rem', color: colors.text.hi}}>Need Official Support? </h3>
  <p style={{fontSize: '0.9rem', color: colors.text.lo, marginBottom: '15px'}}>
@@ -257,7 +280,7 @@ const PeerFeedbackPage = () => {
  </AnimatePresence>
 
           {/* SUBMIT BUTTON */}
-          {(isFullGhost || isOtherNo || (showRatings && formData.overall_rating > 0 && (formData.role === 'Volunteer' || formData.progress))) && (
+          {(isFullGhost || isOtherNo || (showRatings && formData.overall_rating > 0 && (formData.role === 'Volunteer' || (formData.role === 'CoFounder'? (formData.cf_synergy && formData.cf_continue): formData.progress)))) && (
  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="submit" style={styles.primaryBtn} disabled={loading}>
              {loading? <div style={{display:'flex', gap:'10px', justifyContent:'center'}}><Spinner size="20px" color="white" />Saving...</div>: "Submit Feedback "}
  </motion.button>
