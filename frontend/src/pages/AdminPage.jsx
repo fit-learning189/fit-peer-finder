@@ -220,7 +220,7 @@ const AdminPage = () => {
  <div style={{display:'flex', alignItems:'center', gap:'15px'}}>
  <h1 style={{color: colors.text.hi, margin: 0, fontSize: '1.4rem', fontWeight: 700}}>Admin</h1>
  <select value={programFilter} onChange={e => { setProgramFilter(e.target.value); setCurrentGroupPage(1); }} style={styles.programSelect}>
- <option value="All">All Programs</option><option value="AIFW">AI Fluency for the Workplace</option>
+ <option value="All">All Programs</option><option value="FA">Founder Academy</option>
  </select>
  </div>
  <div style={{display:'flex', gap:'10px', flexWrap: 'wrap'}}>
@@ -243,16 +243,17 @@ const AdminPage = () => {
  <div style={styles.statsGrid}>
  <StatCard title="Total Learners" value={totalInView} color={colors.accent.azure} emoji="" />
  <StatCard title="Match Rate" value={matchRate} sub={`(${matchedInView})`} color={colors.accent.lime} emoji="" />
- <StatCard title="Pending Queue" value={pendingInView} color={colors.accent.limeHi} emoji="⏳" />
+ <StatCard title="Pending Queue" value={pendingInView} color={colors.accent.limeHi} emoji="" />
  <StatCard title="Overall Rating" value={data?.stats?.tool_rating || 'N/A'} color="#e83e8c" emoji="" />
  <StatCard title="Unpaired Needs" value={unpairedList.filter(l =>l.connection_type === 'need').length} color={colors.accent.danger} emoji="" />
  <StatCard title="Unpaired Volunteers" value={unpairedList.filter(l =>l.connection_type === 'offer').length} color="#FF9800" emoji="" />
+ <StatCard title="Unpaired Co-Founders" value={unpairedList.filter(l =>l.connection_type === 'cofounder').length} color={colors.accent.azureHi} emoji="" />
  </div>
 
  <div style={styles.chartsGrid}>
  <ChartBox title="By Short Course" data={courses} color={colors.accent.azure} />
  <ChartBox title="Unpaired Days" data={daysUnpaired} color={colors.accent.danger} />
- <ChartBox title="By Country" data={countries} color={colors.accent.azureHi} wide />
+ <ChartBox title="By State" data={countries} color={colors.accent.azureHi} wide />
  </div>
  </div>
         )}
@@ -281,7 +282,7 @@ const AdminPage = () => {
  <div style={styles.tableWrapper}>
  <table style={styles.table}>
  <thead>
- <tr><th>Select</th><th>Days</th><th>Name</th><th>Country</th><th>Time Zone</th><th>Program</th><th>Short Course</th><th>Request Type</th><th>Pref</th><th>Size/Cap</th><th>Actions</th></tr>
+ <tr><th>Select</th><th>Days</th><th>Name</th><th>State</th><th>Program</th><th>Short Course</th><th>Request Type</th><th>Pref</th><th>Size/Cap</th><th>Actions</th></tr>
  </thead>
  <tbody>
                   {unpairedList.map(l => (
@@ -290,12 +291,12 @@ const AdminPage = () => {
  <td><span style={styles.badge}>{getDaysSince(l.timestamp)}d</span></td>
  <td><strong>{l.name}</strong><br/><span style={styles.subText}>{l.email}</span></td>
  <td>{l.country || '-'}</td>
- <td>{l.timezone || '-'}</td>
+ 
  <td>{l.program}</td><td>{l.course}</td>
- <td>{l.connection_type.toUpperCase()}</td>
+ <td>{l.connection_type === 'cofounder'? `CO-FOUNDER (${l.cofounder_role === 'looking'? 'Looking': 'Offering'}: ${l.skill_type})`: l.connection_type.toUpperCase()}</td>
  <td>{l.match_preference || 'N/A'}</td>
- <td>{l.connection_type === 'group'? l.group_size: l.connection_type === 'offer'? l.volunteer_capacity: '2'}</td>
- <td><button style={styles.btnSmall} onClick={() =>initiateRandomPair(l.id, l.name)}>Random </button></td>
+ <td>{l.connection_type === 'group'? l.group_size: l.connection_type === 'offer'? l.volunteer_capacity: l.connection_type === 'cofounder'? (l.cofounder_role === 'looking'? l.cofounders_needed: '-'): '2'}</td>
+ <td>{l.connection_type === 'cofounder'? <span style={{fontSize: '0.75rem', color: colors.text.mute}}>Manual only</span>: <button style={styles.btnSmall} onClick={() =>initiateRandomPair(l.id, l.name)}>Random </button>}</td>
  </tr>
                   ))}
  </tbody>
@@ -329,7 +330,7 @@ const AdminPage = () => {
  <div key={m.id} style={styles.memberChip}>
  <span style={{fontWeight:'bold'}}>{m.name}</span> <span style={styles.subText}>| {m.email}</span><br/>
  <span style={{fontSize:'0.8rem', color: colors.accent.azure}}>
-                          Role: <strong>{m.connection_type.toUpperCase()}</strong> | TZ: <strong>{m.timezone || 'N/A'}</strong>
+                          Role: <strong>{m.connection_type.toUpperCase()}</strong> | State: <strong>{m.country || 'N/A'}</strong>{m.connection_type === 'cofounder' && (<> | {m.cofounder_role === 'looking'? 'Needs': 'Offers'}: <strong>{m.skill_type}</strong></>)}
  </span>
  </div>
                     ))}
