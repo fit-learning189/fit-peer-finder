@@ -6,7 +6,7 @@ import { colors, fonts, ui } from '../theme';
 import Spinner from '../components/Spinner';
 import { API_URL } from '../config';
 
-const PROGRAM_NAMES = { AIFW: 'AI Fluency for the Workplace' };
+const PROGRAM_NAMES = { FA: 'Founder Academy' };
 
 const VolunteerMarketplace = () => {
   const location = useLocation();
