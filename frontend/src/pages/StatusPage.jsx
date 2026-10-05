@@ -152,6 +152,10 @@ const StatusPage = () => {
             const capacity = parseInt(req.user?.volunteer_capacity) || 0;
             const currentPeersCount = req.group? req.group.filter(p =>p.connection_type === 'need').length: 0;
             const remaining = capacity - currentPeersCount;
+            const isCofounder = req.user?.connection_type === 'cofounder';
+            const isLookingFounder = isCofounder && req.user?.cofounder_role === 'looking';
+            const cofoundersNeeded = parseInt(req.user?.cofounders_needed) || 1;
+            const cofoundersFound = req.group ? req.group.filter(p => p.connection_type === 'cofounder' && p.cofounder_role === 'offering').length : 0;
 
             return (
  <motion.div key={req.real_id || `match-${idx}`} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: idx * 0.1 }} style={styles.card}>
@@ -183,6 +187,25 @@ const StatusPage = () => {
  </div>
                   )}
 
+ {isCofounder && (
+ <div style={styles.customMsgBox}>
+ <h4 style={{margin: '0 0 5px 0', color: colors.text.hi}}>Co-Founder Status</h4>
+                          {isLookingFounder ? (
+                            cofoundersFound < cofoundersNeeded ? (
+ <p style={{margin: 0, color: colors.accent.azureHi}}>
+ <strong>{cofoundersFound}</strong> of <strong>{cofoundersNeeded}</strong> Co-Founder(s) matched so far. We will email you as more join.
+ </p>
+                            ) : (
+ <p style={{margin: 0, color: colors.accent.limeHi}}><strong>Your founding team is complete.</strong></p>
+                            )
+                          ) : (
+ <p style={{margin: 0, color: colors.accent.azureHi}}>
+                              You are matched with a founder looking for <strong>{req.user.skill_type}</strong>. More Co-Founders may be added to this group.
+ </p>
+                          )}
+ </div>
+                  )}
+
  <h3 style={{ color: colors.text.hi, fontSize: '1.1rem' }}>Your Group Members:</h3>
 
                   {req.group.map((peer, peerIdx) => (
@@ -190,7 +213,13 @@ const StatusPage = () => {
  <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', fontSize: '1rem' }}>{peer.name}</p>
  <p style={{ margin: '0 0 5px 0', color: colors.text.lo, fontSize: '0.85rem' }}> {peer.email}</p>
  <p style={{ margin: '0 0 10px 0', color: colors.text.lo, fontSize: '0.85rem' }}>
-                        Role: <strong>{peer.connection_type === 'offer'? 'Volunteer ': peer.connection_type === 'need'? 'Peer': 'Study Buddy'}</strong><br/>
+                        Role: <strong>{peer.connection_type === 'offer'? 'Volunteer ': peer.connection_type === 'need'? 'Peer': peer.connection_type === 'cofounder'? (peer.cofounder_role === 'looking'? `Founder (looking for ${peer.skill_type})`: `Co-Founder (${peer.skill_type})`): 'Study Buddy'}</strong><br/>
+                        {peer.connection_type === 'cofounder' && (
+                          <>
+                            Experience: <strong>{peer.skill_level}</strong><br/>
+                            Compensation / equity: <strong>{peer.equity_type}</strong><br/>
+                          </>
+                        )}
                         Prefers: <strong>{peer.meeting_preference || 'All'}</strong>
  </p>
 
@@ -217,7 +246,7 @@ const StatusPage = () => {
 
         {/* RIGHT COLUMN: QUEUED REQUESTS */}
  <div style={styles.column}>
- <h3 style={styles.columnTitle}>⏳ In Queue ({queuedRequests.length})</h3>
+ <h3 style={styles.columnTitle}>In Queue ({queuedRequests.length})</h3>
 
           {queuedRequests.length === 0 && (
  <div style={styles.emptyColBox}>No pending requests.</div>
@@ -232,7 +261,7 @@ const StatusPage = () => {
 
  <div style={styles.body}>
  <div style={{ textAlign: 'center' }}>
- <div style={styles.pendingBadge}>⏳ WAITING FOR MATCH</div>
+ <div style={styles.pendingBadge}>WAITING FOR MATCH</div>
  <p style={{ color: colors.text.lo, fontSize: '0.95rem', marginBottom: '20px' }}>
                     Hang in there! we are working hard to find you the perfect peer. You will receive an email the moment a match is found!
  </p>
