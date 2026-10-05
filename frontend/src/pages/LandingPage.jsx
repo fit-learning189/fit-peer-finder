@@ -245,6 +245,7 @@ const LandingPage = () => {
  <OptionCard title="Offer Support" desc="(Volunteer)" color={colors.accent.lime} textColor={colors.primary.berkeleyBlue} onClick={() =>handleOptionSelect('offer')} />
  <OptionCard title="I Need Help" desc="(Browse peers)" color={colors.accent.danger} onClick={() =>handleOptionSelect('need')} />
  <OptionCard title="Group Squad" desc="(Join a team of 3-5)" color={colors.accent.roseHi} onClick={() =>handleOptionSelect('group')} />
+ <OptionCard wide title="Find a Co-Founder" desc="(Build your founding team)" color={colors.accent.azureHi} textColor={colors.text.onAccent} onClick={() =>handleOptionSelect('cofounder')} />
  </div>
  </>
               )}
@@ -307,8 +308,8 @@ const StarIcon = ({ filled }) => (
   </svg>
 );
 
-const OptionCard = ({ title, desc, color, textColor='white', onClick }) => (
- <motion.button whileHover={{scale: 1.02}} onClick={onClick} style={{...styles.optionCard, background: color, color: textColor}}>
+const OptionCard = ({ title, desc, color, textColor='white', onClick, wide=false }) => (
+ <motion.button whileHover={{scale: 1.02}} onClick={onClick} style={{...styles.optionCard, background: color, color: textColor, ...(wide ? { gridColumn: '1 / -1' } : {})}}>
  <div style={{fontWeight: 'bold', fontSize: '1.1rem'}}>{title}</div> <div style={{fontSize: '0.85rem', opacity: 0.9}}>{desc}</div>
  </motion.button>
 );
