@@ -6,6 +6,11 @@ import { colors, fonts } from '../theme';
 import Spinner from '../components/Spinner';
 import { API_URL } from '../config';
 
+// --- CO-FOUNDER OPTIONS (must match COFOUNDER_* lists in app.py exactly) ---
+const COFOUNDER_SKILLS = ['Marketing', 'Sales', 'Backend Developer', 'Frontend Developer', 'Accountant', 'Legal Associate', 'Fundraiser', 'Project Manager', 'Supply Chain'];
+const COFOUNDER_LEVELS = ['Entry 0-2 years', 'Midlevel 2-5 years', 'Experienced 5+ years', 'Expert 12+ years'];
+const COFOUNDER_EQUITY = ['Vesting', 'Offer Salary', 'Offer Equity', "Can't offer any", 'Flexible'];
+
 // --- US STATES (FIT is USA-only for now) ---
 const usStates = [
  "Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut",
@@ -36,6 +41,7 @@ const RegisterPage = () => {
     group_size: '2', // Defaults to 2 for Study Buddy, will change for 'group'
     volunteer_capacity: '', 
     pseudonym: '', // NEW: Replaces gender for 'offer'
+    cofounder_role: '', skill_type: '', skill_level: '', equity_type: '', cofounders_needed: '', // Co-Founder only
     disclaimer_agree: false
   });
 
@@ -87,7 +93,8 @@ const RegisterPage = () => {
  'find': 'Find a Study Buddy ',
  'group': 'Form a Group Squad ',
  'offer': 'Offer Support to Peers ',
- 'need': targetVolunteerId? 'Instant Support Pairing ': 'Request Priority Support '
+ 'need': targetVolunteerId? 'Instant Support Pairing ': 'Request Priority Support ',
+ 'cofounder': 'Find a Co-Founder '
   };
 
   return (
@@ -141,7 +148,7 @@ const RegisterPage = () => {
  <div style={styles.row}>
  <div style={styles.half}>
  <label style={styles.label}>State *</label>
- <select style={styles.select} name="State" onChange={handleChange} required value={formData.country}>
+ <select style={styles.select} name="country" onChange={handleChange} required value={formData.country}>
  <option value="">--Select--</option>
                       {usStates.map(state => (
  <option key={state} value={state}>{state}</option>
@@ -178,6 +185,7 @@ const RegisterPage = () => {
  </select>
  </div>
  </div>
+           {connectionType !== 'cofounder' && (
 
  <div style={styles.row}>
  <div style={styles.half}>
@@ -191,6 +199,68 @@ const RegisterPage = () => {
  </select>
  </div>
  </div>
+           )}
+
+           {/* --- CO-FOUNDER PROFILE - ONLY for Find a Co-Founder --- */}
+           {connectionType === 'cofounder' && (
+             <div style={styles.cofounderBox}>
+               <div>
+                 <label style={styles.label}>What are you here to do? *</label>
+                 <select style={styles.select} name="cofounder_role" onChange={handleChange} required value={formData.cofounder_role}>
+                   <option value="">--Select--</option>
+                   <option value="looking">I am looking for a Co-Founder</option>
+                   <option value="offering">I want to be a Co-Founder for someone</option>
+                 </select>
+               </div>
+
+               {formData.cofounder_role && (
+                 <>
+                   <div style={styles.row}>
+                     <div style={styles.half}>
+                       <label style={styles.label}>{formData.cofounder_role === 'looking' ? 'Skill You Need *' : 'Your Skill *'}</label>
+                       <select style={styles.select} name="skill_type" onChange={handleChange} required value={formData.skill_type}>
+                         <option value="">--Select--</option>
+                         {COFOUNDER_SKILLS.map(s => <option key={s} value={s}>{s}</option>)}
+                       </select>
+                     </div>
+                     <div style={styles.half}>
+                       <label style={styles.label}>{formData.cofounder_role === 'looking' ? 'Experience Level You Want *' : 'Your Experience Level *'}</label>
+                       <select style={styles.select} name="skill_level" onChange={handleChange} required value={formData.skill_level}>
+                         <option value="">--Select--</option>
+                         {COFOUNDER_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                       </select>
+                     </div>
+                   </div>
+
+                   <div style={styles.row}>
+                     <div style={styles.half}>
+                       <label style={styles.label}>{formData.cofounder_role === 'looking' ? 'What can you offer a Co-Founder? *' : 'Compensation / equity you are open to *'}</label>
+                       <select style={styles.select} name="equity_type" onChange={handleChange} required value={formData.equity_type}>
+                         <option value="">--Select--</option>
+                         {COFOUNDER_EQUITY.map(e => <option key={e} value={e}>{e}</option>)}
+                       </select>
+                     </div>
+                     {formData.cofounder_role === 'looking' && (
+                       <div style={styles.half}>
+                         <label style={styles.label}>How many Co-Founders do you need? *</label>
+                         <select style={styles.select} name="cofounders_needed" onChange={handleChange} required value={formData.cofounders_needed}>
+                           <option value="">--Select--</option>
+                           <option value="1">1 Co-Founder</option>
+                           <option value="2">2 Co-Founders</option>
+                           <option value="3">3 Co-Founders</option>
+                         </select>
+                       </div>
+                     )}
+                   </div>
+                 </>
+               )}
+
+               <p style={styles.cofounderNote}>
+                 We match on skill first, across all Founder Academy short courses. Experience level is a preference rather than a requirement:
+                 we pair you with the closest level available instead of leaving you waiting.
+               </p>
+             </div>
+           )}
 
            {/* --- CONDITIONAL RENDER: MATCHING PREFERENCE & CAPACITIES --- */}
 
@@ -252,6 +322,8 @@ const RegisterPage = () => {
 };
 
 const styles = {
+  cofounderBox: { background: colors.surface.base, padding: '16px', borderRadius: '8px', border: `1px solid ${colors.accent.azure}`, display: 'flex', flexDirection: 'column', gap: '14px' },
+  cofounderNote: { margin: 0, fontSize: '0.8rem', lineHeight: 1.5, color: colors.text.mute },
   container: { minHeight: '100vh', background: colors.surface.base, padding: '40px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', fontFamily: fonts.main },
   backBtn: { alignSelf: 'flex-start', marginBottom: '20px', background: 'transparent', border: `1px solid ${colors.accent.azureHi}`, color: colors.accent.azureHi, padding: '8px 16px', borderRadius: '20px', cursor: 'pointer' },
   card: { background: colors.surface.raised, padding: '2.5rem', borderRadius: '16px', width: '100%', maxWidth: '600px', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' },
